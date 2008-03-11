@@ -1,0 +1,101 @@
+Revision history for CatalystX-CRUD
+
+0.01    3 October 2007
+        First version, released on an unsuspecting world.
+
+0.02    22 October 2007
+        * Fixed Makefile.PL dependencies (added Catalyst::Component::ACCEPT_CONTEXT)
+        * Refactored Controller and Model to abstract a little more, notably
+          added the form_to_object() method in Controller.
+        * New File example implementation of the whole Model/Object/Iterator API.
+
+0.03    22 October 2007
+        * add test for File implementation (and fix the bugs it revealed)
+        * fix AUTOLOAD to ignore DESTROY
+        
+0.04    25 October 2007
+        * rework view_on_single_result API in base Controller and tests for same
+
+0.05    1 November 2007
+        * stash query in Controller results for View
+        * do_search() returns if no input
+        * Model reserved params now start with _
+        * some can/AUTOLOAD black magic to make Object/delegate stuff DWIM.
+
+0.06    6 November 2007
+        * clean up temp files from make test [rt# 30425]
+
+0.07    9 November 2007
+        * added count() method to base Controller
+
+0.08    9 November 2007
+        * fix documentation for save() method.
+
+0.09    10 November 2007
+        * fix missing precommit() default sub in Controller.pm
+        * fix AUTOLOAD hackery in Model.pm
+
+
+0.10    12 Nov 2007
+        * simplify Iterator base class to hardcode 'delegate' method name
+
+0.11    14 Nov 2007
+        * fix AUTOLOAD method to report correct object class on error
+
+0.12    17 Nov 2007
+        * fix bug in Controller when determining whether do_search() should search.
+
+0.13    19 Nov 2007
+        * fix bug in Controller when there is only one result in do_search().
+
+0.14    23 Nov 2007
+        * add Tutorial
+        * fix bug (again) in Controller when there is only one result in do_search().
+
+0.15    24 Nov 2007
+        * oops. actually include the tutorial pod in this release.
+
+0.16    04 Dec 2007
+        * fix typo in Tutorial so it shows up in search.cpan.org
+        * fix Controller->do_search() to always include query for view's use,
+        even when there are no results.
+
+0.17    19 Dec 2007
+        * add field_names() method to base Controller class. This is to aid development
+        of CatalystX::CRUD::View implementations.
+
+0.18    20 Dec 2007
+        * added _no_page parameter support to the Model API.
+        * added ::Model::Utils to help with DRY
+
+0.19    21 Dec 2007
+        * added Sort::SQL to Makefile.PL reqs.
+
+0.20    31 Dec 2007
+        * fix view_on_single_result() to check can_write()
+
+0.21    04 Jan 2008
+        * fix black magic can() in Model.pm
+
+0.22    04 Jan 2008
+        * add treat_like_int() support to Model::Utils
+
+0.23    20 Jan 2008
+        * added REST API
+        * added allow_GET_writes Controller config option, to prevent casual GET /save or /delete requests.
+
+0.24    22 Jan 2008
+        * always fetch() in REST->default, to fix bug with no object being set for create()
+        * always uc() the req method for comparison purposes
+        * fix bug when checking the _http_method param to use params() instead of param() and use the first if multiple.
+        * refactor REST to provide backwards compat with Controller for easy @ISA swap (as advertised)
+
+0.25    1 Feb 2008
+        * fix bug to clarify what happens when form_to_object() returns false.
+
+0.26    xxx
+        * fix bug in Iterator to test for !next() rather than !defined(next())
+        * re-set action in ::REST->default so that RPC-style template naming works
+        * use :Path instead of :Private on ::REST->default
+
+       
