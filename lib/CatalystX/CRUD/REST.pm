@@ -4,6 +4,7 @@ use warnings;
 use base qw( CatalystX::CRUD::Controller );
 
 use Carp;
+use Data::Dump qw( dump );
 
 our $VERSION = '0.26';
 
@@ -104,7 +105,8 @@ sub default : Path {
 
     my $method = $self->req_method($c);
     if ( !defined $oid && $method eq 'GET' ) {
-        $c->action( $c->action->namespace . '/list' );
+        $c->action->name('list');
+        $c->action->reverse( join( '/', $c->action->namespace, 'list' ) );
         return $self->list($c);
     }
 
@@ -112,11 +114,17 @@ sub default : Path {
     $self->fetch( $c, $oid );
 
     # what RPC-style method to call
-    my $to_call = defined($rpc) || $http_method_map{$method};
+    my $to_call = defined($rpc) ? $rpc : $http_method_map{$method};
+
+    # backwards compat naming for RPC style
+    if ( $to_call =~ m/^(create|edit)$/ ) {
+        $to_call .= '_form';
+    }
     $c->log->debug("$method -> $to_call") if $c->debug;
 
-    # so auto-template-deduction works just like RPC style
-    $c->action( $c->action->namespace . '/' . $to_call );
+    # so TT (others?) auto-template-deduction works just like RPC style
+    $c->action->name($to_call);
+    $c->action->reverse( join( '/', $c->action->namespace, $to_call ) );
 
     return $self->can($to_call) ? $self->$to_call($c) : $self->view($c);
 }
@@ -154,6 +162,7 @@ Overrides base method to disable chaining.
 
 sub edit {
     my ( $self, $c ) = @_;
+    Data::Dump::dump $c->stash;
     return $self->NEXT::edit($c);
 }
 

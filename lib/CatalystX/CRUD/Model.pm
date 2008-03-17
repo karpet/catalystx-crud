@@ -7,7 +7,6 @@ use base qw(
     Catalyst::Model
 );
 use Carp;
-use Data::Pageset;
 
 our $VERSION = '0.26';
 
@@ -166,34 +165,6 @@ Returns the C<page_size> set in config().
 
 sub page_size { shift->config->{page_size} }
 
-=head2 make_pager( I<total>, I<results> )
-
-Returns a Data::Pageset object using I<total>,
-either the C<_page_size> param or the value of page_size(),
-and the C<_page> param or C<1>.
-
-If the C<_no_page> request param is true, will return undef.
-B<NOTE:> Model authors should check (and respect) the C<_no_page>
-param when constructing queries.
-
-=cut
-
-sub make_pager {
-    my ( $self, $count, $results ) = @_;
-    my $c = $self->context;
-    return if $c->req->param('_no_page');
-    return Data::Pageset->new(
-        {   total_entries    => $count,
-            entries_per_page => $c->req->param('_page_size')
-                || $self->page_size,
-            current_page => $c->req->param('_page')
-                || 1,
-            pages_per_set => 10,        #TODO make this configurable?
-            mode          => 'slide',
-        }
-    );
-}
-
 =head2 new_object
 
 Returns CatalystX::CRUD::Object->new(). A sane default, assuming
@@ -294,6 +265,8 @@ count(). Example of use:
 =back
 
 =cut
+
+sub make_query { shift->throw_error("must implement make_query()") }
 
 1;
 

@@ -97,5 +97,12 @@ Revision history for CatalystX-CRUD
         * fix bug in Iterator to test for !next() rather than !defined(next())
         * re-set action in ::REST->default so that RPC-style template naming works
         * use :Path instead of :Private on ::REST->default
+        * fix several bugs with action() set in ::REST
+        * ::Controller->form now calls NEXT::form. This is for REST compat and @INC oddness.
+        * added new ::ModelAdapter class and refactored base Controller to use it.
+        * moved make_pager() from base ::Model to ::Model::Utils
+        * added new ::Test classes to ease writing controller-agnostic tests.
+        * new, optional 'make_query' method in Controller.
+
 
        
