@@ -30,7 +30,7 @@ CatalystX::CRUD::Controller - base class for CRUD controllers
                     default_template        => 'path/to/foo/edit.tt',
                     model_name              => 'Foo',
                     model_adapter           => 'FooAdapter', # optional
-                    moniker                 => 'SomeTable',  # optional
+                    model_meta              => { moniker => 'SomeTable' },  # optional
                     primary_key             => 'id',
                     view_on_single_result   => 0,
                     page_size               => 50,
@@ -353,8 +353,13 @@ sub new {
     if ( $self->config->{model_adapter} ) {
         Catalyst::Utils->ensure_class_loaded(
             $self->config->{model_adapter} );
-        $self->model_adapter( $self->config->{model_adapter}
-                ->new( { model_name => $self->config->{model_name}, moniker => $self->config->{moniker} } ) );
+        $self->model_adapter(
+            $self->config->{model_adapter}->new(
+                {   model_name => $self->config->{model_name},
+                    model_meta => $self->config->{model_meta}
+                }
+            )
+        );
     }
     return $self;
 }
