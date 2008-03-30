@@ -351,7 +351,7 @@ sub new {
 
     # if model_adapter class is defined, load and instantiate it.
     if ( $self->config->{model_adapter} ) {
-        Catalyst::Utils->ensure_class_loaded(
+        Catalyst::Utils::ensure_class_loaded(
             $self->config->{model_adapter} );
         $self->model_adapter(
             $self->config->{model_adapter}->new(
