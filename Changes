@@ -103,6 +103,16 @@ Revision history for CatalystX-CRUD
         * moved make_pager() from base ::Model to ::Model::Utils
         * added new ::Test classes to ease writing controller-agnostic tests.
         * new, optional 'make_query' method in Controller.
+        * move AUTOLOAD() and can() hackery out of base Model into base Object where it belongs.
+          Now there is only 2 sins instead of the 3 in previous releases (where we no longer
+          monkey-patch the subs at run time).
+        * refactor tests to actually perform some CRUD.
+        * add ::ModelAdapter::File example.
+        * add envvar CXCRUD_TEST in base CX::CRUD to cluck() stack traces on exceptions. Mostly
+          useful during testing since the ::Test::Controller now returns only the error.
+        * renamed 'buffer' to 'content' in ::Object::File.
+        * ::Model::File->fetch() will now always return an object even if it does not yet
+          exist on the filesystem.
 
 
        

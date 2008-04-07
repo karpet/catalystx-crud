@@ -57,7 +57,10 @@ Read I<path/to/file> from disk and return a CXCO::File object.
 
 I<path/to/file> is assumed to be in C<inc_path>
 
-If I<path/to/file> is empty or cannot be found, undef is returned.
+If I<path/to/file> is empty or cannot be found, the
+CatalystX::CRUD::Object::File object is returned but its content()
+will be undef. If its parent dir is '.', its dir() 
+will be set to the first item in inc_path().
 
 =cut
 
@@ -77,7 +80,13 @@ sub fetch {
         }
     }
 
-    return -s $file ? $file : undef;
+    # test if we found it or not
+    if ( $file->dir eq '.' ) {
+        $file = $self->object_class->new(
+            file => Path::Class::File->new( $self->inc_path->[0], $file ) );
+    }
+
+    return $file;
 }
 
 =head2 inc_path

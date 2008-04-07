@@ -108,48 +108,6 @@ sub Xsetup {
         }
         $self->object_class($object_class);
 
-        # some black magic hackery to make Object classes act like
-        # they're overloaded delegate()s
-        {
-            no strict 'refs';
-            no warnings 'redefine';
-            *{ $object_class . '::AUTOLOAD' } = sub {
-                my $obj       = shift;
-                my $obj_class = ref($obj) || $obj;
-                my $method    = our $AUTOLOAD;
-                $method =~ s/.*://;
-                return if $method eq 'DESTROY';
-                if ( $obj->delegate->can($method) ) {
-                    return $obj->delegate->$method(@_);
-                }
-
-                $obj->throw_error(
-                    "method '$method' not implemented in class '$obj_class'");
-
-            };
-
-            # this overrides the basic $object_class->can
-            # to always call secondary can() on its delegate.
-            # we have to UNIVERSAL::can because we are overriding can()
-            # in $class and would otherwise have a recursive nightmare.
-            *{ $object_class . '::can' } = sub {
-                my ( $obj, $method, @arg ) = @_;
-                if ( ref($obj) ) {
-
-                    # object method tries object_class first,
-                    # then the delegate().
-                    return UNIVERSAL::can( $object_class, $method )
-                        || $obj->delegate->can( $method, @arg );
-                }
-                else {
-
-                    # class method
-                    return UNIVERSAL::can( $object_class, $method );
-                }
-            };
-
-        }
-
     }
     if ( !defined $self->config->{page_size} ) {
         $self->config->{page_size} = 50;

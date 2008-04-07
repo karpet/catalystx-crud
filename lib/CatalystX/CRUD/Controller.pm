@@ -24,18 +24,18 @@ CatalystX::CRUD::Controller - base class for CRUD controllers
     use base qw( CatalystX::CRUD::Controller );
     
     __PACKAGE__->config(
-                    form_class              => 'MyForm::Foo',
-                    init_form               => 'init_with_foo',
-                    init_object             => 'foo_from_form',
-                    default_template        => 'path/to/foo/edit.tt',
-                    model_name              => 'Foo',
-                    model_adapter           => 'FooAdapter', # optional
-                    model_meta              => { moniker => 'SomeTable' },  # optional
-                    primary_key             => 'id',
-                    view_on_single_result   => 0,
-                    page_size               => 50,
-                    allow_GET_writes        => 0,
-                    );
+            form_class              => 'MyForm::Foo',
+            init_form               => 'init_with_foo',
+            init_object             => 'foo_from_form',
+            default_template        => 'path/to/foo/edit.tt',
+            model_name              => 'Foo',
+            model_adapter           => 'FooAdapter', # optional
+            model_meta              => { moniker => 'SomeTable' },  # optional
+            primary_key             => 'id',
+            view_on_single_result   => 0,
+            page_size               => 50,
+            allow_GET_writes        => 0,
+    );
                     
     1;
     
@@ -514,8 +514,7 @@ sub postcommit {
         $c->response->redirect( $c->uri_for('') );
     }
     else {
-        $c->response->redirect(
-            $c->uri_for( '', $o->delegate->$pk, 'view' ) );
+        $c->response->redirect( $c->uri_for( '', $o->$pk, 'view' ) );
     }
 
     1;

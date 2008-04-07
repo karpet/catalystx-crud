@@ -55,6 +55,9 @@ processing instead of returning. See fetch() for an example.
 sub throw_error {
     my $self = shift;
     my $msg = shift || 'unknown error';
+    if ( $ENV{CXCRUD_TEST} ) {
+        Carp::cluck();
+    }
     Catalyst::Exception->throw($msg);
 }
 

@@ -62,7 +62,7 @@ sub form_to_object {
     my $id = $c->req->params->{$pk} || $c->stash->{object_id};
 
     # initialize the form with the object's values
-    $form->$form_meth( $obj->delegate );
+    $form->$form_meth($obj);
 
     # set param values from request
     $form->params( $c->req->params );
@@ -81,7 +81,7 @@ sub form_to_object {
     }
 
     # re-set object's values from the now-valid form
-    $form->$obj_meth( $obj->delegate );
+    $form->$obj_meth($obj);
 
     # set id explicitly since there's some bug
     # with param() setting it in save()
@@ -113,14 +113,24 @@ sub form {
 
 =head2 end
 
-Serializes the object with serialize_object() 
+If the stash() has an 'object' defined,
+serializes the object with serialize_object() 
 and sticks it in the response body().
+
+If there are any errors, replaces the normal Catalyst debug screen
+with contents of $c->error.
 
 =cut
 
 sub end : Private {
     my ( $self, $c ) = @_;
-    $c->res->body( $self->serialize_object( $c, $c->stash->{object} ) );
+    if ( defined $c->stash->{object} ) {
+        $c->res->body( $self->serialize_object( $c, $c->stash->{object} ) );
+    }
+    if ( @{ $c->error } ) {
+        $c->res->body( join( "\n", @{ $c->error } ) );
+        $c->clear_errors;
+    }
 }
 
 =head2 serialize_object( I<context>, I<object> )
@@ -135,7 +145,7 @@ sub serialize_object {
     my $fields = $self->config->{form_fields};
     my $serial = {};
     for my $f (@$fields) {
-        $serial->{$f} = $object->$f;
+        $serial->{$f} = defined $object->$f ? $object->$f . '' : undef;
     }
     return Data::Dump::dump($serial);
 }
