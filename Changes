@@ -113,6 +113,7 @@ Revision history for CatalystX-CRUD
         * renamed 'buffer' to 'content' in ::Object::File.
         * ::Model::File->fetch() will now always return an object even if it does not yet
           exist on the filesystem.
-
-
+        * change default create() method in Controller to call methods directly instead of forward()ing.
+        * add create() method to REST that just redirects to create_form().
+        * change from 'use NEXT' to 'use Class::C3'
        

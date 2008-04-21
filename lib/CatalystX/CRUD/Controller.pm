@@ -7,6 +7,7 @@ use base qw(
 );
 use Carp;
 use Catalyst::Utils;
+use Class::C3;
 
 __PACKAGE__->mk_accessors(qw( model_adapter ));
 
@@ -125,15 +126,15 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
 
 Attribute: Local
 
-Namespace for creating a new object. Forwards to fetch() and edit()
+Namespace for creating a new object. Calls to fetch() and edit()
 with a B<primary_key> value of C<0> (zero).
 
 =cut
 
 sub create : Local {
     my ( $self, $c ) = @_;
-    $c->forward( 'fetch', [0] );
-    $c->detach('edit');
+    $self->fetch( $c, 0 );
+    $self->edit($c);
 }
 
 =head2 edit
@@ -347,7 +348,7 @@ if set in config().
 
 sub new {
     my ( $class, $app_class, $args ) = @_;
-    my $self = $class->NEXT::new( $app_class, $args );
+    my $self = $class->next::method( $app_class, $args );
 
     # if model_adapter class is defined, load and instantiate it.
     if ( $self->config->{model_adapter} ) {
@@ -418,7 +419,7 @@ sub form {
     elsif ( $self->{_form}->can('reset') ) {
         $self->{_form}->reset;
     }
-    $self->NEXT::form($c);
+    $self->next::method($c) if $self->next::can;
     return $self->{_form};
 }
 
@@ -572,7 +573,7 @@ sub do_search {
         return;
     }
 
-    # turn flag on if explicitly turned off
+    # turn flag on unless explicitly turned off
     $c->stash->{view_on_single_result} = 1
         unless exists $c->stash->{view_on_single_result};
 

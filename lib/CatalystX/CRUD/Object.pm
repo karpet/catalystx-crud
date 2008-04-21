@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use base qw( Class::Accessor::Fast CatalystX::CRUD );
 use Carp;
+use Class::C3;
+Class::C3::initialize();
 
 __PACKAGE__->mk_ro_accessors(qw( delegate ));
 
@@ -52,7 +54,7 @@ Generic constructor. I<args> may be a hash or hashref.
 sub new {
     my $class = shift;
     my $arg = ref( $_[0] ) eq 'HASH' ? $_[0] : {@_};
-    return $class->SUPER::new($arg);
+    return $class->next::method($arg);
 }
 
 =head2 delegate
@@ -105,17 +107,18 @@ they are overloaded delegate()s.
 =cut
 
 sub AUTOLOAD {
-    my $obj       = shift;
-    my $obj_class = ref($obj) || $obj;
-    my $method    = our $AUTOLOAD;
+    my $obj            = shift;
+    my $obj_class      = ref($obj) || $obj;
+    my $delegate_class = ref( $obj->delegate ) || $obj->delegate;
+    my $method         = our $AUTOLOAD;
     $method =~ s/.*://;
     return if $method eq 'DESTROY';
     if ( $obj->delegate->can($method) ) {
         return $obj->delegate->$method(@_);
     }
 
-    $obj->throw_error(
-        "method '$method' not implemented in class '$obj_class'");
+    $obj->throw_error( "method '$method' not implemented in class "
+            . "'$obj_class' or '$delegate_class'" );
 
 }
 

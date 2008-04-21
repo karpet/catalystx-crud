@@ -6,6 +6,7 @@ use File::Find;
 use Carp;
 use Data::Dump qw( dump );
 use Path::Class::File;
+use Class::C3;
 
 our $VERSION = '0.26';
 
@@ -42,7 +43,7 @@ to the C<root> config value.
 sub Xsetup {
     my ( $self, $c ) = @_;
     $self->config->{inc_path} ||= [ $c->config->{root} ];
-    $self->NEXT::Xsetup($c);
+    $self->next::method($c);
 }
 
 =head2 new_object( file => I<path/to/file> )

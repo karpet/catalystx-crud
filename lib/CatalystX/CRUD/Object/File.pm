@@ -4,7 +4,7 @@ use warnings;
 use base qw( CatalystX::CRUD::Object );
 use Path::Class::File;
 use Carp;
-use NEXT;
+use Class::C3;
 use overload(
     q[""]    => sub { shift->delegate },
     fallback => 1,
@@ -43,7 +43,7 @@ Returns new CXCO::File object.
 
 sub new {
     my $class = shift;
-    my $self  = $class->NEXT::new(@_);
+    my $self  = $class->next::method(@_);
     my $file  = $self->{file} or $self->throw_error("file param required");
     $self->{delegate} = Path::Class::File->new($file);
     return $self;

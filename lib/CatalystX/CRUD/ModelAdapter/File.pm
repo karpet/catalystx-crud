@@ -6,6 +6,7 @@ use base qw(
     CatalystX::CRUD::Model::File
     CatalystX::CRUD::Model::Utils
 );
+use Class::C3;
 
 our $VERSION = '0.26';
 
@@ -47,7 +48,7 @@ Implements required method.
 
 sub new_object {
     my ( $self, $c, @arg ) = @_;
-    $self->SUPER::new_object(@arg);
+    $self->next::method(@arg);
 }
 
 =head2 fetch( I<context>, I<args> )
@@ -58,7 +59,7 @@ Implements required method.
 
 sub fetch {
     my ( $self, $c, @arg ) = @_;
-    $self->SUPER::new_object(@arg);
+    $self->next::method(@arg);
 }
 
 =head2 search( I<context>, I<args> )
@@ -69,7 +70,7 @@ Implements required method.
 
 sub search {
     my ( $self, $c, @arg ) = @_;
-    $self->SUPER::new_object(@arg);
+    $self->next::method(@arg);
 }
 
 =head2 iterator( I<context>, I<args> )
@@ -80,7 +81,7 @@ Implements required method.
 
 sub iterator {
     my ( $self, $c, @arg ) = @_;
-    $self->SUPER::new_object(@arg);
+    $self->next::method(@arg);
 }
 
 =head2 count( I<context>, I<args> )
@@ -91,7 +92,7 @@ Implements required method.
 
 sub count {
     my ( $self, $c, @arg ) = @_;
-    $self->SUPER::new_object(@arg);
+    $self->next::method(@arg);
 }
 
 =head2 make_query( I<context>, I<args> )
@@ -102,7 +103,7 @@ Implements required method.
 
 sub make_query {
     my ( $self, $c, @arg ) = @_;
-    $self->SUPER::new_object(@arg);
+    $self->next::method(@arg);
 }
 
 1;

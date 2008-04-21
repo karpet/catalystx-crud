@@ -7,6 +7,7 @@ use base qw(
     Catalyst::Model
 );
 use Carp;
+use Class::C3;
 
 our $VERSION = '0.26';
 
@@ -82,7 +83,7 @@ Overrides the Catalyst::Model new() method to call Xsetup().
 
 sub new {
     my ( $class, $c, @arg ) = @_;
-    my $self = $class->NEXT::new( $c, @arg );
+    my $self = $class->next::method( $c, @arg );
     $self->Xsetup( $c, @arg );
     return $self;
 }
