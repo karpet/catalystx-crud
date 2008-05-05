@@ -143,24 +143,24 @@ sub default : Path {
 =head2 req_method( I<context> )
 
 Internal method. Returns the HTTP method name, allowing
-POST to serve as a tunnel when the C<_http_method> param
-is present. Since most browsers do not support PUT or DELETE
-HTTP methods, you can use the C<_http_method> param to tunnel
+POST to serve as a tunnel when the C<_http_method> or
+C<x-tunneled-method> param is present. 
+Since most browsers do not support PUT or DELETE
+HTTP methods, you can use the special param to tunnel
 the desired HTTP method and then POST instead.
 
 =cut
 
+my @tunnel_param_names = qw( x-tunneled-method _http_method );
+
 sub req_method {
     my ( $self, $c ) = @_;
     if ( uc( $c->req->method ) eq 'POST' ) {
-        return exists $c->req->params->{'_http_method'}
-            ? uc(
-            ref $c->req->params->{'_http_method'}
-            ? $c->req->params->{'_http_method'}->[0]
-            : $c->req->params->{'_http_method'}
-            )
-            : 'POST';
-
+        for my $name (@tunnel_param_names) {
+            if ( exists $c->req->params->{$name} ) {
+                return uc( $c->req->params->{$name} );
+            }
+        }
     }
     return uc( $c->req->method );
 }

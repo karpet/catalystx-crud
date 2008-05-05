@@ -116,4 +116,6 @@ Revision history for CatalystX-CRUD
         * change default create() method in Controller to call methods directly instead of forward()ing.
         * add create() method to REST that just redirects to create_form().
         * change from 'use NEXT' to 'use Class::C3'
-       
+        * added support for "x-tunneled-method" param to REST controller in addition to "_http_method". 
+          This is for compat with Catalyst::Request::REST::ForBrowsers.
+
