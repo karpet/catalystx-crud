@@ -93,7 +93,7 @@ Revision history for CatalystX-CRUD
 0.25    1 Feb 2008
         * fix bug to clarify what happens when form_to_object() returns false.
 
-0.26    xxx
+0.26    06 May 2008
         * fix bug in Iterator to test for !next() rather than !defined(next())
         * re-set action in ::REST->default so that RPC-style template naming works
         * use :Path instead of :Private on ::REST->default
