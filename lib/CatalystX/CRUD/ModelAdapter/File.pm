@@ -1,12 +1,7 @@
 package CatalystX::CRUD::ModelAdapter::File;
 use strict;
 use warnings;
-use base qw(
-    CatalystX::CRUD::ModelAdapter
-    CatalystX::CRUD::Model::File
-    CatalystX::CRUD::Model::Utils
-);
-use Class::C3;
+use base qw( CatalystX::CRUD::ModelAdapter );
 
 our $VERSION = '0.26';
 
@@ -37,9 +32,6 @@ Only new or overridden methods are documented here.
 
 =cut
 
-# must implement the following methods
-# but we just end up calling the Model::File superclass
-
 =head2 new_object( I<context>, I<args> )
 
 Implements required method.
@@ -48,7 +40,8 @@ Implements required method.
 
 sub new_object {
     my ( $self, $c, @arg ) = @_;
-    $self->next::method(@arg);
+    my $model = $c->model( $self->model_name );
+    $model->new_object(@arg);
 }
 
 =head2 fetch( I<context>, I<args> )
@@ -59,7 +52,8 @@ Implements required method.
 
 sub fetch {
     my ( $self, $c, @arg ) = @_;
-    $self->next::method(@arg);
+    my $model = $c->model( $self->model_name );
+    $model->fetch(@arg);
 }
 
 =head2 search( I<context>, I<args> )
@@ -70,7 +64,8 @@ Implements required method.
 
 sub search {
     my ( $self, $c, @arg ) = @_;
-    $self->next::method(@arg);
+    my $model = $c->model( $self->model_name );
+    $model->search(@arg);
 }
 
 =head2 iterator( I<context>, I<args> )
@@ -81,7 +76,8 @@ Implements required method.
 
 sub iterator {
     my ( $self, $c, @arg ) = @_;
-    $self->next::method(@arg);
+    my $model = $c->model( $self->model_name );
+    $model->iterator(@arg);
 }
 
 =head2 count( I<context>, I<args> )
@@ -92,7 +88,8 @@ Implements required method.
 
 sub count {
     my ( $self, $c, @arg ) = @_;
-    $self->next::method(@arg);
+    my $model = $c->model( $self->model_name );
+    $model->count(@arg);
 }
 
 =head2 make_query( I<context>, I<args> )
@@ -103,7 +100,52 @@ Implements required method.
 
 sub make_query {
     my ( $self, $c, @arg ) = @_;
-    $self->next::method(@arg);
+    my $model = $c->model( $self->model_name );
+    $model->make_query(@arg);
+}
+
+=head2 create( I<context>, I<file_object> )
+
+Implements required CRUD method.
+
+=cut
+
+sub create {
+    my ( $self, $c, $file ) = @_;
+    $file->create;
+}
+
+=head2 read( I<context>, I<file_object> )
+
+Implements required CRUD method.
+
+=cut
+
+sub read {
+    my ( $self, $c, $file ) = @_;
+    $file->read;
+}
+
+=head2 update( I<context>, I<file_object> )
+
+Implements required CRUD method.
+
+=cut
+
+sub update {
+    my ( $self, $c, $file ) = @_;
+    $file->update;
+}
+
+=head2 delete( I<context>, I<file_object> )
+
+Implements required CRUD method.
+
+=cut
+
+sub delete {
+    my ( $self, $c, $file ) = @_;
+    $file->delete;
 }
 
 1;

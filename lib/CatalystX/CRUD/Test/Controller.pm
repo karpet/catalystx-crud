@@ -57,8 +57,9 @@ sub form_to_object {
     my $obj       = $c->stash->{object};
     my $obj_meth  = $self->init_object;
     my $form_meth = $self->init_form;
-    my $pk        = $self->primary_key
-        ;    # id always comes from url but not necessarily from form
+
+    # id always comes from url but not necessarily from form
+    my $pk = $self->primary_key;
     my $id = $c->req->params->{$pk} || $c->stash->{object_id};
 
     # initialize the form with the object's values

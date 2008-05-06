@@ -11,7 +11,7 @@ __PACKAGE__->config(
     form_class    => 'MyApp::Form',
     form_fields   => [qw( file content )],
     model_adapter => 'CatalystX::CRUD::ModelAdapter::File',
-    model_name    => 'FileAdapter',
+    model_name    => 'File',
     primary_key   => 'file',
     init_form     => 'init_with_file',
     init_object   => 'file_from_form',

@@ -1,4 +1,4 @@
-use Test::More tests => 15;
+use Test::More tests => 24;
 use lib qw( lib t/lib );
 use_ok('CatalystX::CRUD::Model::File');
 use_ok('CatalystX::CRUD::Object::File');
@@ -6,8 +6,6 @@ use_ok('CatalystX::CRUD::Object::File');
 use Catalyst::Test 'MyApp';
 use Data::Dump qw( dump );
 use HTTP::Request::Common;
-
-$ENV{CXCRUD_TEST} = 1;    # we want stack traces in exceptions
 
 ###########################################
 # set up the test env and config
@@ -68,3 +66,57 @@ ok( $res = request( HTTP::Request->new( GET => '/file/testfile/view' ) ),
 #diag( $res->content );
 
 like( $res->content, qr/content => undef/, "file nuked" );
+
+##############################################################
+## Adapter API
+
+# create
+ok( $res = request(
+        POST( '/fileadapter/testfile/save', [ content => 'hello world' ] )
+    ),
+    "POST new file adapter"
+);
+
+is( $res->content,
+    '{ content => "hello world", file => "testfile" }',
+    "POST new file response adapter"
+);
+
+# read the file we just created
+ok( $res
+        = request(
+        HTTP::Request->new( GET => '/fileadapter/testfile/view' ) ),
+    "GET new file adapter"
+);
+
+#diag( $res->content );
+
+like( $res->content, qr/content => "hello world"/, "read file adapter" );
+
+# update the file
+ok( $res = request(
+        POST( '/fileadapter/testfile/save', [ content => 'foo bar baz' ] )
+    ),
+    "update file adapter"
+);
+
+like( $res->content, qr/content => "foo bar baz"/, "update file adapter" );
+
+# delete the file
+
+ok( $res = request( POST( '/fileadapter/testfile/rm', [] ) ),
+    "rm file adapter" );
+
+#diag( $res->content );
+
+# confirm it is gone
+ok( $res
+        = request(
+        HTTP::Request->new( GET => '/fileadapter/testfile/view' ) ),
+    "confirm we nuked the file adapter"
+);
+
+#diag( $res->content );
+
+like( $res->content, qr/content => undef/, "file nuked adapter" );
+

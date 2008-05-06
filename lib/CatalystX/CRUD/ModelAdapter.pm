@@ -1,10 +1,14 @@
 package CatalystX::CRUD::ModelAdapter;
 use strict;
 use warnings;
-use base qw( CatalystX::CRUD Class::Accessor::Fast );
+use base qw(
+    CatalystX::CRUD
+    Class::Accessor::Fast
+);
+use Class::C3;
 use Carp;
 
-__PACKAGE__->mk_accessors(qw( model_name context ));
+__PACKAGE__->mk_accessors(qw( model_name model_meta ));
 
 =head1 NAME
 
@@ -57,7 +61,7 @@ Manual).
 
 =head1 METHODS
 
-CatalystX::CRUD::Model inherits from CatalystX::CRUD.
+CatalystX::CRUD::ModelAdapter inherits from CatalystX::CRUD.
 
 The following methods should be implemented in your subclass.
 
@@ -113,6 +117,44 @@ count(). See CataystX::CRUD::Model for examples.
 =cut
 
 sub make_query { shift->throw_error("must implement make_query()") }
+
+=head1 CRUD Methods
+
+The following methods are implemented in CatalystX::CRUD::Object when
+using the CatalystX::CRUD::Model API. When using the ModelAdapter API, they
+should be implemented in the adapter class.
+
+=head2 create( I<context>, I<object> )
+
+Should implement the C in CRUD.
+
+=cut
+
+sub create { shift->throw_error("must implement create()") }
+
+=head2 read( I<context>, I<object> )
+
+Should implement the R in CRUD.
+
+=cut
+
+sub read { shift->throw_error("must implement read()") }
+
+=head2 update( I<context>, I<object> )
+
+Should implement the U in CRUD.
+
+=cut
+
+sub update { shift->throw_error("must implement update()") }
+
+=head2 delete( I<context>, I<object> )
+
+Should implement the D in CRUD.
+
+=cut
+
+sub delete { shift->throw_error("must implement delete()") }
 
 1;
 
