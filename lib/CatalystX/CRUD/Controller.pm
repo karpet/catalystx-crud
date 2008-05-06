@@ -102,10 +102,10 @@ sub default : Private {
 
 Attribute: chained to namespace, expecting one argument.
 
-Calls B<do_model> read() method with a single key/value pair, 
+Calls B<do_model> fetch() method with a single key/value pair, 
 using the B<primary_key> config value as the key and the I<primary_key> as the value.
 
-The return value of read() is saved in stash() as C<object>.
+The return value of fetch() is saved in stash() as C<object>.
 
 The I<primary_key> value is saved in stash() as C<object_id>.
 
