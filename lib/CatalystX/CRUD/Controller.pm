@@ -478,15 +478,21 @@ sub form_to_object {
 
 =head2 save_obj( I<context>, I<object> )
 
-Calls the update() or create() method on the I<object>, picking the method
-based on whether C<object_id> in stash() evaluates true (update) or false (create).
+Calls the update() or create() method on the I<object> (or model_adapter()),
+picking the method based on whether C<object_id> in stash() 
+evaluates true (update) or false (create).
 
 =cut
 
 sub save_obj {
     my ( $self, $c, $obj ) = @_;
     my $method = $c->stash->{object_id} ? 'update' : 'create';
-    $obj->$method;
+    if ( $self->model_adapter ) {
+        $self->model_adapter->$method( $c, $obj );
+    }
+    else {
+        $obj->$method;
+    }
 }
 
 =head2 precommit( I<context>, I<object> )
