@@ -11,7 +11,7 @@ use Class::C3;
 
 __PACKAGE__->mk_accessors(qw( model_adapter ));
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 =head1 NAME
 
@@ -270,7 +270,12 @@ sub rm : PathPart Chained('fetch') Args(0) {
     unless ( $self->precommit( $c, $o ) ) {
         return 0;
     }
-    $o->delete;
+    if ( $self->model_adapter ) {
+        $self->model_adapter->delete( $c, $o );
+    }
+    else {
+        $o->delete;
+    }
     $self->postcommit( $c, $o );
 }
 

@@ -119,3 +119,6 @@ Revision history for CatalystX-CRUD
         * added support for "x-tunneled-method" param to REST controller in addition to "_http_method". 
           This is for compat with Catalyst::Request::REST::ForBrowsers.
 
+0.27    xxx
+        * fix Controller->rm() to check for model_adapter() and call its delete() method as advertised.
+
