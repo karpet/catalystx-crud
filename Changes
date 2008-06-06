@@ -125,6 +125,5 @@ Revision history for CatalystX-CRUD
         * added CatalystX::CRUD::Results class
         * added naked_results() config option to base Controller
         * refactored base Controller to make all config options into accessors. added t/02-controller
-
-
+        * change Model::Utils to use req->params rather than param()
 
