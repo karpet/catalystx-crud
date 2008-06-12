@@ -609,7 +609,7 @@ sub do_search {
 
     # stash the form so it can be re-displayed
     # subclasses must stick-ify it in their own way.
-    $c->stash->{form} ||= $self->form;
+    $c->stash->{form} ||= $self->form($c);
 
     # if we have no input, just return for initial search
     if ( !@arg && !$c->req->param && $c->action->name eq 'search' ) {

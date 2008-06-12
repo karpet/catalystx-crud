@@ -16,7 +16,7 @@ CatalystX::CRUD::Results - search results class
 =head1 SYNOPSIS
 
  # in .tt file
- Your search returned [% results.count %] hits.
+ Your search returned [% results.count %] total hits.
  Your query was [% results.query %].
  You are on page [% results.pager.current_page %].
  [% FOREACH r IN results.results %]
@@ -35,7 +35,7 @@ The following read-only accessors are available:
 
 =head2 count
 
-Returns number of results.
+Returns total number of results.
 
 =head2 pager
 
@@ -47,7 +47,7 @@ Returns the search query.
 
 =head2 results
 
-Returns array ref of found objects.
+Returns array ref of current found objects.
 
 =cut
 
@@ -61,6 +61,8 @@ CatalystX::CRUD::Iterator and its next() method will be called.
 
 sub next {
     my $self = shift;
+    return unless defined $self->results;
+
     if ( ref( $self->results ) eq 'ARRAY' ) {
         return shift @{ $self->{results} };
     }
