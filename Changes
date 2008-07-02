@@ -127,3 +127,6 @@ Revision history for CatalystX-CRUD
         * refactored base Controller to make all config options into accessors. added t/02-controller
         * change Model::Utils to use req->params rather than param()
 
+0.28    xxx
+        * API for ModelAdapter changed to pass controller instance in do_model()
+
