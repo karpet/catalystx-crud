@@ -58,6 +58,8 @@ sub new {
     return $self;
 }
 
+*field_names = \&fields;
+
 =head2 fields( [ I<arrayref> ] )
 
 Get/set the arrayref of field names.

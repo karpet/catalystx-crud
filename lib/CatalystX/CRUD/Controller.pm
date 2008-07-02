@@ -406,7 +406,7 @@ sub do_model {
     my $c      = shift or $self->throw_error("context required");
     my $method = shift or $self->throw_error("method required");
     if ( $self->model_adapter ) {
-        return $self->model_adapter->$method( $c, @_ );
+        return $self->model_adapter->$method( $self, $c, @_ );
     }
     else {
         return $c->model( $self->model_name )->$method(@_);
