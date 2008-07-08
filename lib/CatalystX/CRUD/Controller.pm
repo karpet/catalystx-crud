@@ -139,11 +139,40 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
     my ( $self, $c, $id ) = @_;
     $c->stash->{object_id} = $id;
     $c->log->debug("fetching id = $id") if $c->debug;
-    my @arg = $id ? ( $self->primary_key() => $id ) : ();
+    my $pk = $self->get_primary_key( $c, $id );
+    $c->log->debug("fetching $pk = $id") if $c->debug;
+    my @arg = $id ? ( $pk => $id ) : ();
     $c->stash->{object} = $self->do_model( $c, 'fetch', @arg );
     if ( $self->has_errors($c) or !$c->stash->{object} ) {
         $self->throw_error( 'No such ' . $self->model_name );
     }
+}
+
+=head2 get_primary_key( I<context>, I<pk_value> )
+
+Should return the name of the field to fetch() I<pk_value> from.
+The default behaviour is to return $self->primary_key.
+However, if you have other unique fields in your schema, you
+might return a unique field other than the primary key.
+This allows for a more flexible URI scheme.
+
+A good example is Users. A User record might have a numerical id (uid)
+and a username, both of which are unique. So if username 'foobar'
+has a primary key (uid) of '1234', both these URIs could fetch the same
+record:
+
+ /uri/for/user/1234
+ /uri/for/user/foobar
+
+Again, the default behaviour is to return the primary_key field name
+from config() (accessed via $self->primary_key) but you can override
+get_primary_key() in your subclass to provide more flexibility.
+
+=cut
+
+sub get_primary_key {
+    my ( $self, $c, $id ) = @_;
+    return $self->primary_key;
 }
 
 =head2 create
