@@ -138,10 +138,9 @@ The I<primary_key> value is saved in stash() as C<object_id>.
 sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
     my ( $self, $c, $id ) = @_;
     $c->stash->{object_id} = $id;
-    $c->log->debug("fetching id = $id") if $c->debug;
-    my $pk = $self->get_primary_key( $c, $id );
-    $c->log->debug("fetching $pk = $id") if $c->debug;
-    my @arg = $id ? ( $pk => $id ) : ();
+    $c->log->debug("fetch $id") if $c->debug;
+    my @pk = $self->get_primary_key( $c, $id );
+    my @arg = $id ? (@pk) : ();
     $c->stash->{object} = $self->do_model( $c, 'fetch', @arg );
     if ( $self->has_errors($c) or !$c->stash->{object} ) {
         $self->throw_error( 'No such ' . $self->model_name );
@@ -150,29 +149,46 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
 
 =head2 get_primary_key( I<context>, I<pk_value> )
 
-Should return the name of the field to fetch() I<pk_value> from.
-The default behaviour is to return $self->primary_key.
+Should return an array of the name of the field(s) to fetch() I<pk_value> from
+and their respective values.
+
+The default behaviour is to return B<primary_key>.
 However, if you have other unique fields in your schema, you
 might return a unique field other than the primary key.
 This allows for a more flexible URI scheme.
 
 A good example is Users. A User record might have a numerical id (uid)
 and a username, both of which are unique. So if username 'foobar'
-has a primary key (uid) of '1234', both these URIs could fetch the same
+has a B<primary_key> (uid) of '1234', both these URIs could fetch the same
 record:
 
  /uri/for/user/1234
  /uri/for/user/foobar
 
-Again, the default behaviour is to return the primary_key field name
+Again, the default behaviour is to return the B<primary_key> field name(s)
 from config() (accessed via $self->primary_key) but you can override
 get_primary_key() in your subclass to provide more flexibility.
+
+If your primary key is composed of multiple columns, your return value
+should include all those columns and their values as extracted
+from I<pk_value>. Multiple values are assumed to be joined with C<;;>.
 
 =cut
 
 sub get_primary_key {
     my ( $self, $c, $id ) = @_;
-    return $self->primary_key;
+    my $pk = $self->primary_key;
+    my @ret;
+    if ( ref $pk ) {
+        my @val = split( m/;;/, $id );
+        for my $col (@$pk) {
+            push( @ret, $col => shift @val );
+        }
+    }
+    else {
+        @ret = ( $pk => $id );
+    }
+    return @ret;
 }
 
 =head2 create
@@ -707,6 +723,9 @@ The following methods simply return the config() value of the same name.
 =item default_template
 
 =item primary_key
+
+primary_key may be a single column name or an array ref of multiple
+column names.
 
 =item page_size
 

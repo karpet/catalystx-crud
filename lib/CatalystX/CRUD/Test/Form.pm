@@ -66,6 +66,10 @@ Get/set the arrayref of field names.
 
 This must be set in new().
 
+=head2 field_names
+
+An alias for fields().
+
 =head2 params( [ I<hashref> ] )
 
 Get/set the hashref of key/value pairs for the form object. The keys should
