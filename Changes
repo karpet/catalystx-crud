@@ -129,5 +129,6 @@ Revision history for CatalystX-CRUD
 
 0.28    xxx
         * API for ModelAdapter changed to pass controller instance in do_model()
-        * add get_primary_key() method to base Controller. This allows for PKs composed of multiple columns.
+        * add get_primary_key() and make_primary_key_string() methods to base Controller. 
+          This allows for PKs composed of multiple columns.
 

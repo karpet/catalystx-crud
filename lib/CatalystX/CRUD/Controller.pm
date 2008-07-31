@@ -177,6 +177,7 @@ from I<pk_value>. Multiple values are assumed to be joined with C<;;>.
 
 sub get_primary_key {
     my ( $self, $c, $id ) = @_;
+    return () unless defined $id;
     my $pk = $self->primary_key;
     my @ret;
     if ( ref $pk ) {
@@ -189,6 +190,39 @@ sub get_primary_key {
         @ret = ( $pk => $id );
     }
     return @ret;
+}
+
+=head2 make_primary_key_string( I<object> )
+
+Using value of B<primary_string> constructs a URI-ready
+string based on values in I<object>. I<object> is often
+the value of:
+ 
+ $c->stash->{object}
+
+but could be any object that has accessor methods with
+the same names as the field(s) specified by B<primary_key>.
+
+=cut
+
+sub make_primary_key_string {
+    my ( $self, $obj ) = @_;
+    my $pk = $self->primary_key;
+    my $id;
+    if ( ref $pk ) {
+        my @vals;
+        for my $field (@$pk) {
+            my $v = scalar $obj->$field;
+            $v = '' unless defined $v;
+            $v =~ s/;/ sprintf( "%%%02X", ';' ) /eg;
+            push( @vals, $v );
+        }
+        $id = join( ';;', @vals );
+    }
+    else {
+        $id = $obj->$pk;
+    }
+    return $id;
 }
 
 =head2 create
@@ -589,13 +623,14 @@ redirect resolving to view().
 
 sub postcommit {
     my ( $self, $c, $o ) = @_;
-    my $pk = $self->primary_key;
+
+    my $id = $self->make_primary_key_string($o);
 
     if ( $c->action->name eq 'rm' ) {
         $c->response->redirect( $c->uri_for('') );
     }
     else {
-        $c->response->redirect( $c->uri_for( '', $o->$pk, 'view' ) );
+        $c->response->redirect( $c->uri_for( '', $id, 'view' ) );
     }
 
     1;
@@ -614,14 +649,13 @@ action in the same class as the current action.
 sub view_on_single_result {
     my ( $self, $c, $results ) = @_;
     return 0 unless $self->config->{view_on_single_result};
-    my $pk  = $self->primary_key;
     my $obj = $results->[0];
+    my $id  = $self->make_primary_key_string($obj);
 
     # the append . '' is to force stringify anything
     # that might be an object with overloading. Otherwise
     # uri_for() assumes it is an Action object.
-    return $c->uri_for( $obj->$pk . '',
-        $self->can_write($c) ? 'edit' : 'view' );
+    return $c->uri_for( $id . '', $self->can_write($c) ? 'edit' : 'view' );
 }
 
 =head2 make_query( I<context>, I<arg> )

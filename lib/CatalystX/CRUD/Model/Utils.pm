@@ -107,7 +107,8 @@ sub _which_sort {
     return $params->{'_order'} if defined $params->{'_order'};
     return join( ' ', $params->{'_sort'}, $params->{'_dir'} )
         if defined( $params->{'_sort'} ) && defined( $params->{'_dir'} );
-    return $c->controller->primary_key . ' DESC';
+    my %pks = $c->controller->get_primary_key($c);
+    return join( ' ', map { $_ . ' DESC' } keys %pks );
 }
 
 sub make_sql_query {
