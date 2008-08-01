@@ -152,7 +152,8 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
 Should return an array of the name of the field(s) to fetch() I<pk_value> from
 and their respective values.
 
-The default behaviour is to return B<primary_key>.
+The default behaviour is to return B<primary_key> and any corresponding
+value(s) passed via $c->req->params.
 However, if you have other unique fields in your schema, you
 might return a unique field other than the primary key.
 This allows for a more flexible URI scheme.
@@ -172,6 +173,7 @@ get_primary_key() in your subclass to provide more flexibility.
 If your primary key is composed of multiple columns, your return value
 should include all those columns and their values as extracted
 from I<pk_value>. Multiple values are assumed to be joined with C<;;>.
+See make_primary_key_string().
 
 =cut
 
@@ -183,11 +185,18 @@ sub get_primary_key {
     if ( ref $pk ) {
         my @val = split( m/;;/, $id );
         for my $col (@$pk) {
-            push( @ret, $col => shift @val );
+            my $v
+                = exists $c->req->params->{$col}
+                ? $c->req->params->{$col}
+                : shift(@val);
+            push( @ret, $col => $v );
         }
     }
     else {
-        @ret = ( $pk => $id );
+        @ret
+            = ( $pk => exists $c->req->params->{$pk}
+            ? $c->req->params->{$pk}
+            : $id );
     }
     return @ret;
 }
@@ -202,6 +211,9 @@ the value of:
 
 but could be any object that has accessor methods with
 the same names as the field(s) specified by B<primary_key>.
+
+Multiple values are joined with C<;;> and any C<;> characters
+in the column values are URI-escaped.
 
 =cut
 
