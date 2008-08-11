@@ -132,3 +132,6 @@ Revision history for CatalystX-CRUD
         * add get_primary_key() and make_primary_key_string() methods to base Controller. 
           This allows for PKs composed of multiple columns.
 
+0.29    xxx
+        * fix typos in the Tutorial
+
