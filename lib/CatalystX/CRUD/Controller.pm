@@ -193,10 +193,11 @@ sub get_primary_key {
         }
     }
     else {
-        @ret
-            = ( $pk => exists $c->req->params->{$pk}
+        @ret = (
+              $pk => exists $c->req->params->{$pk}
             ? $c->req->params->{$pk}
-            : $id );
+            : $id
+        );
     }
     return @ret;
 }
