@@ -133,8 +133,9 @@ sub end : Private {
     if ( defined $c->stash->{object} ) {
         $c->res->body( $self->serialize_object( $c, $c->stash->{object} ) );
     }
-    if ( @{ $c->error } ) {
+    if ( $self->has_errors($c) ) {
         $c->res->body( join( "\n", @{ $c->error } ) );
+        $c->res->status(500);
         $c->clear_errors;
     }
 }

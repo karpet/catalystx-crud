@@ -257,6 +257,13 @@ via the relationship I<rel_name>.
 
 It is up to the subclass to implement this method.
 
+=item has_relationship( I<obj>, I<rel_name> )
+
+Should return true or false as to whether I<rel_name> exists for
+I<obj>.
+
+It is up to the subclass to implement this method.
+
 =back
 
 =cut
@@ -264,6 +271,10 @@ It is up to the subclass to implement this method.
 sub make_query  { shift->throw_error("must implement make_query()") }
 sub add_related { shift->throw_error("must implement add_related()") }
 sub rm_related  { shift->throw_error("must implement rm_related()") }
+
+sub has_relationship {
+    shift->throw_error("must implement has_relationship()");
+}
 
 1;
 

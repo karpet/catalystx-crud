@@ -154,10 +154,22 @@ via the relationship I<rel_name>.
 
 It is up to the subclass to implement this method.
 
+=head2 has_relationship( I<controller>, I<context>, I<obj>, I<rel_name> )
+
+Should return true or false as to whether I<rel_name> exists for
+I<obj>.
+
+It is up to the subclass to implement this method.
+
+
 =cut
 
 sub add_related { shift->throw_error("must implement add_related()") }
 sub rm_related  { shift->throw_error("must implement rm_related()") }
+
+sub has_relationship {
+    shift->throw_error("must implement has_relationship()");
+}
 
 =head1 CRUD Methods
 
