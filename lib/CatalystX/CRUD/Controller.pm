@@ -245,6 +245,9 @@ Attribute: Local
 Namespace for creating a new object. Calls to fetch() and edit()
 with a B<primary_key> value of C<0> (zero).
 
+B<NOTE:> This is a GET method named for consistency with the C
+in CRUD. It is not equivalent to a POST in REST terminology.
+
 =cut
 
 sub create : Local {
@@ -298,6 +301,17 @@ sub view : PathPart Chained('fetch') Args(0) {
     }
     my $meth = $self->init_form;
     $c->stash->{form}->$meth( $c->stash->{object} );
+}
+
+=head2 read
+
+Alias for view(), just for consistency with the R in CRUD.
+
+=cut
+
+sub read : PathPart Chained('fetch') Args(0) {
+    my ( $self, $c ) = @_;
+    $self->view($c);
 }
 
 =head2 save
@@ -357,6 +371,17 @@ sub save : PathPart Chained('fetch') Args(0) {
     1;
 }
 
+=head2 update
+
+Alias for save(), just for consistency with the U in CRUD.
+
+=cut
+
+sub update : PathPart Chained('fetch') Args(0) {
+    my ( $self, $c ) = @_;
+    $self->save($c);
+}
+
 =head2 rm
 
 Attribute: chained to fetch(), expecting no arguments.
@@ -393,6 +418,17 @@ sub rm : PathPart Chained('fetch') Args(0) {
         $o->delete;
     }
     $self->postcommit( $c, $o );
+}
+
+=head2 delete
+
+Wrapper for rm(), just for consistency with the D in CRUD.
+
+=cut
+
+sub delete : PathPart Chained('fetch') Args(0) {
+    my ( $self, $c ) = @_;
+    $self->rm($c);
 }
 
 =head2 list
@@ -453,6 +489,86 @@ sub count : Local {
     $c->stash->{fetch_no_results} = 1;
 
     $self->do_search( $c, @arg );
+}
+
+=head2 related( I<rel_name>, I<foreign_pk_value> )
+
+Attribute: chained to fetch(), expecting two arguments.
+
+Similar to fetch(), a chain base method for add_related()
+and rm_related(). Expects two arguments: I<rel_name>
+and I<foreign_pk_value>. Those two values are put in
+stash under those key names.
+
+=cut
+
+sub related : PathPart Chained('fetch') CaptureArgs(2) {
+    my ( $self, $c, $rel, $fpk_value ) = @_;
+    return if $self->has_errors($c);
+    unless ( $self->can_write($c) ) {
+        $self->throw_error('Permission denied');
+        return;
+    }
+    if ( !$self->allow_GET_writes ) {
+        if ( $c->req->method ne 'POST' ) {
+            $self->throw_error('GET request not allowed');
+            return;
+        }
+    }
+    $c->stash->{rel_name}         = $rel;
+    $c->stash->{foreign_pk_value} = $fpk_value;
+}
+
+=head2 remove
+
+Attribute: chained to related().
+
+Dissociate a related many-to-many object of
+relationship name I<rel_name> with primary key value I<foreign_pk_value>.
+
+Example:
+
+ http://yoururl/user/123/group/456/rm_related
+
+will remove user C<123> from the group C<456>.
+
+=cut
+
+sub remove : PathPart Chained('related') Args(0) {
+    my ( $self, $c ) = @_;
+    return if $self->has_errors($c);
+    $self->do_model(
+        $c, 'rm_related', $c->stash->{object},
+        $c->stash->{rel_name},
+        $c->stash->{foreign_pk_value}
+    );
+}
+
+=head2 add
+
+Attribute: chained to related().
+
+Associate the primary object retrieved in fetch() with
+the object with I<foreign_pk_value>
+via a related many-to-many relationship I<rel_name>.
+
+Example:
+
+ http://yoururl/user/123/group/456/add_to
+
+will add user C<123> to the group C<456>.
+
+=cut
+
+sub add : PathPart Chained('related') Args(0) {
+    my ( $self, $c ) = @_;
+    return if $self->has_errors($c);
+    $self->do_model(
+        $c, 'add_related', $c->stash->{object},
+        $c->stash->{rel_name},
+        $c->stash->{foreign_pk_value}
+    );
+
 }
 
 =head1 INTERNAL METHODS

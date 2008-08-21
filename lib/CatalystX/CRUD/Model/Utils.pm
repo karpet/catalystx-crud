@@ -24,7 +24,7 @@ CatalystX::CRUD::Model::Utils - helpful methods for your CRUD Model class
  
 =head1 DESCRIPTION
 
-CatalystX::CRUD::Model::Utils provides helpful not non-essential methods
+CatalystX::CRUD::Model::Utils provides helpful, non-essential methods
 for CRUD Model implementations. Stick it in your @ISA to help reduce the
 amount of code you have to write yourself.
 
