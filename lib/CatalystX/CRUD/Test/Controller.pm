@@ -4,6 +4,7 @@ use warnings;
 use base qw( CatalystX::CRUD::Controller );
 use Carp;
 use Data::Dump;
+use Class::C3;
 
 our $VERSION = '0.29_01';
 
@@ -113,7 +114,8 @@ Returns a new C<form_class> object every time, initialized with C<form_fields>.
 sub form {
     my ( $self, $c ) = @_;
     my $form_class = $self->config->{form_class};
-    my $form = $form_class->new( { fields => $self->config->{form_fields} } );
+    my $arg        = { fields => $self->config->{form_fields} };
+    my $form       = $form_class->new($arg);
     return $form;
 }
 
@@ -134,7 +136,9 @@ sub end : Private {
         $c->res->body( $self->serialize_object( $c, $c->stash->{object} ) );
     }
     if ( $self->has_errors($c) ) {
-        $c->res->body( join( "\n", @{ $c->error } ) );
+        my $err = join( "\n", @{ $c->error } );
+        $c->log->error($err) if $c->debug;
+        $c->res->body($err);
         $c->res->status(500);
         $c->clear_errors;
     }

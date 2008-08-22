@@ -45,7 +45,8 @@ sub new {
     my $class = shift;
     my $self  = $class->next::method(@_);
     my $file  = $self->{file} or $self->throw_error("file param required");
-    $self->{delegate} = Path::Class::File->new($file);
+    $self->{delegate}
+        = Path::Class::File->new( ref $file eq 'ARRAY' ? @$file : $file );
     return $self;
 }
 

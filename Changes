@@ -136,5 +136,8 @@ Revision history for CatalystX-CRUD
         * fix typos in the Tutorial
         * add relationship methods to Controller, ModelAdapter and Model core API.
         * added sugary alias methods for read(), update() and delete() to match CRUD.
+        * refactored REST controller to support related methods and provide better
+          HTTP status checks and responses.
+
 
 

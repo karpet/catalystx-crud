@@ -11,7 +11,9 @@ use Class::C3;
 
 our $VERSION = '0.29_01';
 
-__PACKAGE__->mk_accessors(qw( object_class ));
+__PACKAGE__->mk_accessors(qw( object_class page_size ));
+
+__PACKAGE__->config( page_size => 50 );
 
 =head1 NAME
 
@@ -104,18 +106,17 @@ has already been merged by the time Xsetup() is called.
 
 sub Xsetup {
     my ( $self, $c, $arg ) = @_;
-    if ( exists $self->config->{object_class} ) {
-        my $object_class = $self->config->{object_class};
-        eval "require $object_class";
-        if ($@) {
-            $self->throw_error("$object_class could not be loaded: $@");
-        }
-        $self->object_class($object_class);
 
+    if ( !$self->object_class ) {
+        croak "must configure an object_class";
     }
-    if ( !defined $self->config->{page_size} ) {
-        $self->config->{page_size} = 50;
+
+    my $object_class = $self->object_class;
+    eval "require $object_class";
+    if ($@) {
+        $self->throw_error("$object_class could not be loaded: $@");
     }
+
     return $self;
 }
 
@@ -124,8 +125,6 @@ sub Xsetup {
 Returns the C<page_size> set in config().
 
 =cut
-
-sub page_size { shift->config->{page_size} }
 
 =head2 new_object
 
@@ -257,6 +256,10 @@ via the relationship I<rel_name>.
 
 It is up to the subclass to implement this method.
 
+=item remove_related
+
+remove_related() is an alias for rm_related().
+
 =item has_relationship( I<obj>, I<rel_name> )
 
 Should return true or false as to whether I<rel_name> exists for
@@ -271,6 +274,7 @@ It is up to the subclass to implement this method.
 sub make_query  { shift->throw_error("must implement make_query()") }
 sub add_related { shift->throw_error("must implement add_related()") }
 sub rm_related  { shift->throw_error("must implement rm_related()") }
+*remove_related = \&rm_related;
 
 sub has_relationship {
     shift->throw_error("must implement has_relationship()");

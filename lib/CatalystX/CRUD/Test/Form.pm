@@ -141,7 +141,9 @@ Returns the Form object.
 sub init_with_object {
     my ( $self, $object ) = @_;
     for my $f ( keys %{ $self->params } ) {
-        $self->params->{$f} = $object->$f;
+        if ( $object->can($f) ) {
+            $self->params->{$f} = $object->$f;
+        }
     }
     return $self;
 }
@@ -156,7 +158,9 @@ accessors in I<object> equal to the equivalent value in form.
 sub object_from_form {
     my ( $self, $object ) = @_;
     for my $f ( keys %{ $self->params } ) {
-        $object->$f( $self->params->{$f} );
+        if ( $object->can($f) ) {
+            $object->$f( $self->params->{$f} );
+        }
     }
     return $object;
 }
