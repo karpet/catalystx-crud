@@ -181,7 +181,7 @@ See make_primary_key_string().
 
 sub get_primary_key {
     my ( $self, $c, $id ) = @_;
-    return () unless defined $id;
+    return () unless defined $id and length $id;
     my $pk = $self->primary_key;
     my @ret;
     if ( ref $pk ) {
@@ -529,6 +529,7 @@ sub related : PathPart('') Chained('fetch') CaptureArgs(2) {
         if ( uc( $c->req->method ) ne 'POST' ) {
             $c->res->status(400);
             $c->res->body('GET request not allowed');
+            $c->stash->{error} = 1; # so has_errors() will return true
             return;
         }
     }

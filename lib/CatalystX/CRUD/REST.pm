@@ -12,7 +12,7 @@ our $VERSION = '0.29_01';
 
 =head1 NAME
 
-CatalystX::CRUD::REST - REST-style controller for CRUD
+CatalystX::CRUD::REST - RESTful CRUD controller
 
 =head1 SYNOPSIS
 
@@ -20,6 +20,7 @@ CatalystX::CRUD::REST - REST-style controller for CRUD
     package MyApp::Controller::Foo;
     use strict;
     use base qw( CatalystX::CRUD::REST );
+    use MyForm::Foo;
     
     __PACKAGE__->config(
                     form_class              => 'MyForm::Foo',
@@ -109,7 +110,7 @@ Redirects to create_form().
 
 sub create : Local {
     my ( $self, $c ) = @_;
-    $c->res->redirect( $c->uri_for('create_form') );
+    $c->res->redirect( $c->uri_for( $self->action_for('create_form') ) );
 }
 
 =head2 rest
@@ -221,6 +222,9 @@ sub _rest_related {
 sub _rest {
     my ( $self, $c, @arg ) = @_;
 
+    # default oid to emptry string and not 0
+    # so we can test for length and
+    # still have a false value for fetch()
     my $oid = shift @arg || '';
     my $rpc = shift @arg;
 
@@ -299,10 +303,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub edit {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub edit { shift->next::method(@_) }
 
 =head2 view( I<context> )
 
@@ -310,10 +311,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub view {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub view { shift->next::method(@_) }
 
 =head2 save( I<context> )
 
@@ -321,10 +319,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub save {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub save { shift->next::method(@_) }
 
 =head2 rm( I<context> )
 
@@ -332,10 +327,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub rm {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub rm { shift->next::method(@_) }
 
 =head2 remove( I<context> )
 
@@ -343,10 +335,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub remove {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub remove { shift->next::method(@_) }
 
 =head2 add( I<context> )
 
@@ -354,10 +343,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub add {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub add { shift->next::method(@_) }
 
 =head2 delete( I<context> )
 
@@ -365,10 +351,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub delete {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub delete { shift->next::method(@_) }
 
 =head2 read( I<context> )
 
@@ -376,10 +359,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub read {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub read { shift->next::method(@_) }
 
 =head2 update( I<context> )
 
@@ -387,10 +367,7 @@ Overrides base method to disable chaining.
 
 =cut
 
-sub update {
-    my ( $self, $c ) = @_;
-    return $self->next::method($c);
-}
+sub update { shift->next::method(@_) }
 
 =head2 postcommit( I<context>, I<object> )
 

@@ -1,4 +1,4 @@
-use Test::More tests => 43;
+use Test::More tests => 47;
 use strict;
 use lib qw( lib t/lib );
 use_ok('CatalystX::CRUD::Model::File');
@@ -61,6 +61,8 @@ is( $res->headers->{status}, 302, "new file 302 redirect status" );
 
 # test the Arg matching with no rpc
 
+ok( $res = request('/rest/file/create'), "/rest/file/create" );
+is( $res->headers->{status}, 302, "/rest/file/create" );
 ok( $res = request('/rest/file'), "zero" );
 is( $res->headers->{status}, 302, "redirect == zero" );
 ok( $res = request('/rest/file/testfile'), "one" );
@@ -95,6 +97,8 @@ is( $res->headers->{status}, 204, "related == three" );
 # turn rpc enable on and run again
 MyApp->controller('REST::File')->enable_rpc_compat(1);
 
+ok( $res = request('/rest/file/create'), "/rest/file/create" );
+is( $res->headers->{status}, 302, "/rest/file/create" );
 ok( $res = request('/rest/file'), "zero with rpc" );
 is( $res->headers->{status}, 302, "redirect == zero with rpc" );
 ok( $res = request('/rest/file/testfile'), "one with rpc" );
