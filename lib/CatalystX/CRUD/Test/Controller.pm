@@ -6,7 +6,7 @@ use Carp;
 use Data::Dump;
 use Class::C3;
 
-our $VERSION = '0.29_01';
+our $VERSION = '0.29';
 
 =head1 NAME
 

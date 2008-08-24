@@ -10,7 +10,7 @@ use Class::C3;
 
 __PACKAGE__->mk_accessors(qw( inc_path ));
 
-our $VERSION = '0.29_01';
+our $VERSION = '0.29';
 
 =head1 NAME
 
