@@ -35,7 +35,7 @@ __PACKAGE__->config(
     naked_results         => 0,
 );
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 =head1 NAME
 
@@ -237,6 +237,8 @@ sub make_primary_key_string {
     else {
         $id = $obj->$pk;
     }
+    
+    return $id unless defined $id;
 
     # must escape any / in $id since passing it to uri_for as-is
     # will break.

@@ -8,7 +8,7 @@ use Data::Dump qw( dump );
 
 __PACKAGE__->mk_accessors(qw( enable_rpc_compat ));
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 =head1 NAME
 

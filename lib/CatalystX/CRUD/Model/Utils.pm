@@ -6,7 +6,7 @@ use Sort::SQL;
 use Data::Pageset;
 __PACKAGE__->mk_accessors(qw( use_ilike ne_sign ));
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 =head1 NAME
 
