@@ -10,6 +10,8 @@ __PACKAGE__->mk_accessors(qw( enable_rpc_compat ));
 
 our $VERSION = '0.30';
 
+#warn "REST VERSION = $VERSION";
+
 =head1 NAME
 
 CatalystX::CRUD::REST - RESTful CRUD controller
@@ -132,7 +134,7 @@ my %rpc_methods
     = map { $_ => 1 } qw( create read update delete edit save rm view );
 my %related_methods = map { $_ => 1 } qw( add remove );
 
-sub rest : Path Args {
+sub rest : Path {
     my ( $self, $c, @arg ) = @_;
 
     my $method = $self->req_method($c);
@@ -240,6 +242,7 @@ sub _rest {
     my $method = $self->req_method($c);
 
     if ( !length $oid && $method eq 'GET' ) {
+        $c->log->debug("GET request with no OID") if $c->debug;
         $c->action->name('list');
         $c->action->reverse( join( '/', $c->action->namespace, 'list' ) );
         return $self->list($c);
