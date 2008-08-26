@@ -118,7 +118,7 @@ The fallback method. The default returns a 404 error.
 
 =cut
 
-sub default : Private {
+sub default : Path {
     my ( $self, $c, @args ) = @_;
     $c->res->body('Not found');
     $c->res->status(404);
@@ -237,7 +237,7 @@ sub make_primary_key_string {
     else {
         $id = $obj->$pk;
     }
-    
+
     return $id unless defined $id;
 
     # must escape any / in $id since passing it to uri_for as-is
@@ -252,17 +252,41 @@ sub make_primary_key_string {
 Attribute: Local
 
 Namespace for creating a new object. Calls to fetch() and edit()
-with a B<primary_key> value of C<0> (zero).
+with a B<primary_key> value of C<0> (zero). 
+
+If the Form class has a 'field_value' method, create() will 
+pre-populate the Form instance and Object instance
+with param-based values (i.e. seeds the form via request params).
+
+Example:
+
+ http://localhost/foo/create?name=bar
+ # form and object will have name set to 'bar'
 
 B<NOTE:> This is a GET method named for consistency with the C
 in CRUD. It is not equivalent to a POST in REST terminology.
 
 =cut
 
-sub create : Local {
+sub create : Path('create') {
     my ( $self, $c ) = @_;
     $self->fetch( $c, 0 );
     $self->edit($c);
+
+    # allow for params to be passed in to seed the form/object
+    my $form = $c->stash->{form};
+    my $obj  = $c->stash->{object};
+    if ( $form->can('field_value') ) {
+        for my $field ( $self->field_names($c) ) {
+            if ( exists $c->req->params->{$field} ) {
+                $form->field_value( $field => $c->req->params->{$field} );
+                if ( $obj->can($field) ) {
+                    $obj->$field( $c->req->params->{$field} );
+                }
+            }
+        }
+    }
+
 }
 
 =head2 edit
@@ -531,7 +555,7 @@ sub related : PathPart('') Chained('fetch') CaptureArgs(2) {
         if ( uc( $c->req->method ) ne 'POST' ) {
             $c->res->status(400);
             $c->res->body('GET request not allowed');
-            $c->stash->{error} = 1; # so has_errors() will return true
+            $c->stash->{error} = 1;    # so has_errors() will return true
             return;
         }
     }
@@ -875,11 +899,13 @@ sub do_search {
     unless ( $c->stash->{fetch_no_results} ) {
         $results = $self->do_model( $c, 'search', $query );
     }
-    if (    $results
-        and $count == 1
-        and $c->stash->{view_on_single_result}
-        and ( my $uri = $self->view_on_single_result( $c, $results ) ) )
+
+    if (   $results
+        && $count == 1
+        && $c->stash->{view_on_single_result}
+        && ( my $uri = $self->view_on_single_result( $c, $results ) ) )
     {
+        $c->log->debug("redirect for single_result") if $c->debug;
         $c->response->redirect($uri);
     }
     else {
@@ -890,7 +916,9 @@ sub do_search {
         }
 
         $c->stash->{results}
-            = $self->naked_results ? $results : CatalystX::CRUD::Results->new(
+            = $self->naked_results
+            ? $results
+            : CatalystX::CRUD::Results->new(
             {   count   => $count,
                 pager   => $pager,
                 results => $results,
@@ -898,6 +926,7 @@ sub do_search {
             }
             );
     }
+
 }
 
 =head1 CONVENIENCE METHODS
