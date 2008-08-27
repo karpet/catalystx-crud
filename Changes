@@ -141,5 +141,8 @@ Revision history for CatalystX-CRUD
 
 0.30    xxx
         * fix uninit value warning in Controller
+        * change REST create() : Local to _rest_create() : Path('create') to make it easier for
+          create_form() to call create() in superclass.
+
 
 

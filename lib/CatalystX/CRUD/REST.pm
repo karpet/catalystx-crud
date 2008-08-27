@@ -93,10 +93,9 @@ Acts just like create() in base Controller class, but with a RESTful name.
 
 __PACKAGE__->config( enable_rpc_compat => 0 );
 
-sub create_form : Local {
+sub create_form : Path('create_form') {
     my ( $self, $c ) = @_;
-    $self->fetch( $c, 0 );
-    $self->edit($c);
+    $self->create($c);
 }
 
 sub edit_form : PathPart Chained('fetch') Args(0) {
@@ -110,7 +109,12 @@ Redirects to create_form().
 
 =cut
 
-sub create : Local {
+# no-op to undo the superclass Local attr
+sub create {
+    shift->next::method(@_);
+}
+
+sub _rest_create : Path('create') {
     my ( $self, $c ) = @_;
     $c->res->redirect( $c->uri_for( $self->action_for('create_form') ) );
 }
