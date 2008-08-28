@@ -155,8 +155,9 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
 Should return an array of the name of the field(s) to fetch() I<pk_value> from
 and their respective values.
 
-The default behaviour is to return B<primary_key> and any corresponding
-value(s) passed via $c->req->params.
+The default behaviour is to return B<primary_key> and the
+corresponding value(s) from I<pk_value>.
+
 However, if you have other unique fields in your schema, you
 might return a unique field other than the primary key.
 This allows for a more flexible URI scheme.
@@ -188,19 +189,11 @@ sub get_primary_key {
     if ( ref $pk ) {
         my @val = split( m/;;/, $id );
         for my $col (@$pk) {
-            my $v
-                = exists $c->req->params->{$col}
-                ? $c->req->params->{$col}
-                : shift(@val);
-            push( @ret, $col => $v );
+            push( @ret, $col => shift(@val) );
         }
     }
     else {
-        @ret = (
-              $pk => exists $c->req->params->{$pk}
-            ? $c->req->params->{$pk}
-            : $id
-        );
+        @ret = ( $pk => $id );
     }
     return @ret;
 }
