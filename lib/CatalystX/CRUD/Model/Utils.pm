@@ -115,12 +115,12 @@ sub _which_sort {
     for my $p (qw( cxc-sort _sort )) {
         my $dir = $params->{'cxc-dir'}
             || $params->{'_dir'};
-        return join( ' ', $params->{$p}, $dir )
+        return join( ' ', $params->{$p}, uc($dir) )
             if defined( $params->{$p} ) && defined($dir);
     }
 
-    my %pks = $c->controller->get_primary_key($c);
-    return join( ' ', map { $_ . ' DESC' } keys %pks );
+    my $pks = $c->controller->primary_key;
+    return join( ' ', map { $_ . ' DESC' } ref $pks ? @$pks : ($pks) );
 }
 
 sub make_sql_query {
@@ -133,7 +133,7 @@ sub make_sql_query {
     my $p2q       = $self->params_to_sql_query($field_names);
     my $params    = $c->req->params;
     my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
-    my $s         = join( ' ', map { each %$_ } @$sp );
+    my $s         = join( ' ', map {%$_} @$sp );
     my $offset    = $params->{'cxc-offset'} || $params->{'_offset'};
     my $page_size = $params->{'cxc-page_size'}
         || $params->{'_page_size'}

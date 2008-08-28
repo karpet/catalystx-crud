@@ -149,6 +149,6 @@ Revision history for CatalystX-CRUD
           accessor for the config value 'view_on_single_result'
         * change all reserved param names in Model::Utils to use 'cxc-' prefix instead of '_'. Backwards compat
           is preserved where possible.
-
+        * Model::Utils make_query() will uc() sort direction 
 
 
