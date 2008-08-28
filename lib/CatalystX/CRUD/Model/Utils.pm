@@ -59,40 +59,42 @@ The following reserved request param names are implemented:
 
 =over
 
-=item _order
+=item cxc-order
 
 Sort order. Should be a SQL-friendly string parse-able by Sort::SQL.
 
-=item _sort
+=item cxc-sort
 
-Instead of _order, can pass one column name to sort by.
+Instead of cxc-order, can pass one column name to sort by.
 
-=item _dir
+=item cxc-dir
 
-With _sort, pass the direction in which to sort.
+With cxc-sort, pass the direction in which to sort.
 
-=item _page_size
+=item cxc-page_size
 
-For the Data::Pageset pager object. Defaults to page_size(). An upper limit of 200
-is implemented by default to reduce the risk of a user [unwittingly] creating a denial
+For the Data::Pageset pager object. 
+Defaults to page_size(). An upper limit of 200
+is implemented by default to reduce the risk of 
+a user [unwittingly] creating a denial
 of service situation.
 
-=item _page
+=item cxc-page
 
 What page the current request is coming from. Used to set the offset value
 in the query. Defaults to C<1>.
 
-=item _offset
+=item cxc-offset
 
 Pass explicit row to offset from in query. If not present, deduced from
-_page and _page_size.
+cxc-page and cxc-page_size.
 
-=item _no_page
+=item cxc-no_page
 
-Ignore _page_size, _page and _offset and do not return a limit
+Ignore cxc-page_size, cxc-page and cxc-offset and do not return a limit
 or offset value.
 
-=item _op
+=item cxc-op
 
 If set to C<OR> then the query columns will be marked as OR'd together,
 rather than AND'd together (the default).
@@ -104,9 +106,19 @@ rather than AND'd together (the default).
 sub _which_sort {
     my ( $self, $c ) = @_;
     my $params = $c->req->params;
-    return $params->{'_order'} if defined $params->{'_order'};
-    return join( ' ', $params->{'_sort'}, $params->{'_dir'} )
-        if defined( $params->{'_sort'} ) && defined( $params->{'_dir'} );
+
+    # backwards compat
+    for my $p (qw( cxc-order _order )) {
+        return $params->{$p} if defined $params->{$p};
+    }
+
+    for my $p (qw( cxc-sort _sort )) {
+        my $dir = $params->{'cxc-dir'}
+            || $params->{'_dir'};
+        return join( ' ', $params->{$p}, $dir )
+            if defined( $params->{$p} ) && defined($dir);
+    }
+
     my %pks = $c->controller->get_primary_key($c);
     return join( ' ', map { $_ . ' DESC' } keys %pks );
 }
@@ -122,15 +134,16 @@ sub make_sql_query {
     my $params    = $c->req->params;
     my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
     my $s         = join( ' ', map { each %$_ } @$sp );
-    my $offset    = $params->{'_offset'};
-    my $page_size = $params->{'_page_size'}
+    my $offset    = $params->{'cxc-offset'} || $params->{'_offset'};
+    my $page_size = $params->{'cxc-page_size'}
+        || $params->{'_page_size'}
         || $c->controller->page_size
         || $self->page_size;
 
     # don't let users DoS us. unless they ask to (see _no_page).
     $page_size = 200 if $page_size > 200;
 
-    my $page = $params->{'_page'} || 1;
+    my $page = $params->{'cxc-page'} || $params->{'_page'} || 1;
 
     if ( !defined($offset) ) {
         $offset = ( $page - 1 ) * $page_size;
@@ -150,7 +163,7 @@ sub make_sql_query {
     );
 
     # undo what we've done if asked.
-    if ( $params->{'_no_page'} ) {
+    if ( $params->{'cxc-no_page'} ) {
         delete $query{limit};
         delete $query{offset};
     }
@@ -171,9 +184,10 @@ sub sql_query_as_string {
     for my $p ( sort keys %$q ) {
         my @v = @{ $q->{$p} };
         next unless grep {m/\S/} @v;
-        push( @s, "$p = " . join( ' or ', @v ) );
+        push( @s, "$p = " . join( ' OR ', @v ) );
     }
-    my $op = $self->context->req->params->{_op} || 'AND';
+    my $params = $self->context->req->params;
+    my $op = $params->{'cxc-op'} || $params->{'_op'} || 'AND';
     return join( " $op ", @s );
 }
 
@@ -208,11 +222,13 @@ sub params_to_sql_query {
     my $like = $self->use_ilike ? 'ilike' : 'like';
     my $treat_like_int
         = $self->can('treat_like_int') ? $self->treat_like_int : {};
+    my $params = $c->req->params;
+    my $oper = $params->{'cxc-op'} || $params->{'_op'};
     my $ORify
-        = ( exists $c->req->params->{_op} && $c->req->params->{_op} eq 'OR' )
+        = ( defined $oper && $oper eq 'OR' )
         ? 1
         : 0;
-    my $fuzzy = $c->req->params->{_fuzzy} || 0;
+    my $fuzzy = $params->{'cxc-fuzzy'} || $params->{'_fuzzy'} || 0;
 
     for my $p (@$field_names) {
 
@@ -272,13 +288,15 @@ sub make_pager {
     my ( $self, $count ) = @_;
     my $c      = $self->context;
     my $params = $c->req->params;
-    return if $params->{'_no_page'};
+    return if ( $params->{'cxc-no_page'} or $params->{'_no_page'} );
     return Data::Pageset->new(
         {   total_entries    => $count,
-            entries_per_page => $params->{'_page_size'}
+            entries_per_page => $params->{'cxc-page_size'}
+                || $params->{'_page_size'}
                 || $c->controller->page_size
                 || $self->page_size,
-            current_page => $params->{'_page'}
+            current_page => $params->{'cxc-page'}
+                || $params->{'_page'}
                 || 1,
             pages_per_set => 10,        #TODO make this configurable?
             mode          => 'slide',

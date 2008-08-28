@@ -143,6 +143,12 @@ Revision history for CatalystX-CRUD
         * fix uninit value warning in Controller
         * change REST create() : Local to _rest_create() : Path('create') to make it easier for
           create_form() to call create() in superclass.
+        * clean up old style $self->config->{value} to instead use $self->value in Controller
+        * add app_class() and model_meta() accessors to ModelAdapter 
+        * in base Controller, rename view_on_single_result() method to uri_for_view_on_single_result and make
+          accessor for the config value 'view_on_single_result'
+        * change all reserved param names in Model::Utils to use 'cxc-' prefix instead of '_'. Backwards compat
+          is preserved where possible.
 
 
 

@@ -24,6 +24,7 @@ __PACKAGE__->mk_accessors(
         allow_GET_writes
         naked_results
         page_size
+        view_on_single_result
         )
 );
 
@@ -639,13 +640,13 @@ sub new {
     my $self = $class->next::method( $app_class, $args );
 
     # if model_adapter class is defined, load and instantiate it.
-    if ( $self->config->{model_adapter} ) {
-        Catalyst::Utils::ensure_class_loaded(
-            $self->config->{model_adapter} );
+    if ( $self->model_adapter ) {
+        Catalyst::Utils::ensure_class_loaded( $self->model_adapter );
         $self->model_adapter(
-            $self->config->{model_adapter}->new(
-                {   model_name => $self->config->{model_name},
-                    model_meta => $self->config->{model_meta}
+            $self->model_adapter->new(
+                {   model_name => $self->model_name,
+                    model_meta => $self->model_meta,
+                    app_class  => $app_class,
                 }
             )
         );
@@ -816,9 +817,9 @@ sub postcommit {
     1;
 }
 
-=head2 view_on_single_result( I<context>, I<results> )
+=head2 uri_for_view_on_single_result( I<context>, I<results> )
 
-Returns 0 unless the config() key of the same name is true.
+Returns 0 unless view_on_single_result returns true.
 
 Otherwise, calls the primary_key() value on the first object
 in I<results> and constructs a uri_for() value to the edit()
@@ -826,9 +827,9 @@ action in the same class as the current action.
 
 =cut
 
-sub view_on_single_result {
+sub uri_for_view_on_single_result {
     my ( $self, $c, $results ) = @_;
-    return 0 unless $self->config->{view_on_single_result};
+    return 0 unless $self->view_on_single_result;
 
     # TODO require $results be a CatalystX::CRUD::Results object
     # so we can call next() instead of assuming array ref.
@@ -903,7 +904,8 @@ sub do_search {
     if (   $results
         && $count == 1
         && $c->stash->{view_on_single_result}
-        && ( my $uri = $self->view_on_single_result( $c, $results ) ) )
+        && ( my $uri = $self->uri_for_view_on_single_result( $c, $results ) )
+        )
     {
         $c->log->debug("redirect for single_result") if $c->debug;
         $c->response->redirect($uri);
