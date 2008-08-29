@@ -152,5 +152,6 @@ Revision history for CatalystX-CRUD
         * Model::Utils make_query() will uc() sort direction 
         * change behaviour of get_primary_key() in base Controller to not look in req->params for pk values.
           This allows for changing the PK as part of an update.
+        * add new() in REST to call next::method. Works around (some) multiple inheritance issues.
 
 

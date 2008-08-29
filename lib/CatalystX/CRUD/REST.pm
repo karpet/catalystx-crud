@@ -7,6 +7,7 @@ use Class::C3;
 use Data::Dump qw( dump );
 
 __PACKAGE__->mk_accessors(qw( enable_rpc_compat ));
+__PACKAGE__->config( enable_rpc_compat => 0 );
 
 our $VERSION = '0.30';
 
@@ -90,8 +91,6 @@ Acts just like edit() in base Controller class, but with a RESTful name.
 Acts just like create() in base Controller class, but with a RESTful name.
 
 =cut
-
-__PACKAGE__->config( enable_rpc_compat => 0 );
 
 sub create_form : Path('create_form') {
     my ( $self, $c ) = @_;
@@ -394,6 +393,18 @@ sub postcommit {
     }
 
     1;
+}
+
+=head2 new
+
+Overrides base method just to call next::method to ensure
+config() gets merged correctly.
+
+=cut
+
+sub new {
+    my ( $class, $app_class, $args ) = @_;
+    return $class->next::method( $app_class, $args );
 }
 
 1;
