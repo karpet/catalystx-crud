@@ -115,7 +115,8 @@ sub create {
 
 sub _rest_create : Path('create') {
     my ( $self, $c ) = @_;
-    $c->res->redirect( $c->uri_for( $self->action_for('create_form') ) );
+    $c->res->redirect(
+        $c->uri_for( $self->action_for('create_form'), $c->req->params ) );
 }
 
 =head2 rest
