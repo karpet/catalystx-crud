@@ -798,13 +798,15 @@ redirect resolving to view().
 sub postcommit {
     my ( $self, $c, $o ) = @_;
 
-    my $id = $self->make_primary_key_string($o);
+    unless ( defined $c->res->location and length $c->res->location ) {
+        my $id = $self->make_primary_key_string($o);
 
-    if ( $c->action->name eq 'rm' ) {
-        $c->response->redirect( $c->uri_for('') );
-    }
-    else {
-        $c->response->redirect( $c->uri_for( '', $id, 'view' ) );
+        if ( $c->action->name eq 'rm' ) {
+            $c->response->redirect( $c->uri_for('') );
+        }
+        else {
+            $c->response->redirect( $c->uri_for( '', $id, 'view' ) );
+        }
     }
 
     1;

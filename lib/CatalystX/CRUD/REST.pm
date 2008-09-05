@@ -386,14 +386,18 @@ sub postcommit {
     my ( $self, $c, $o ) = @_;
     my $id = $self->make_primary_key_string($o);
 
-    if ( $c->action->name eq 'rm' ) {
-        $c->response->redirect( $c->uri_for('') );
-    }
-    else {
-        $c->response->redirect( $c->uri_for( '', $id ) );
+    unless ( defined $c->res->location and length $c->res->location ) {
+
+        if ( $c->action->name eq 'rm' ) {
+            $c->response->redirect( $c->uri_for('') );
+        }
+        else {
+            $c->response->redirect( $c->uri_for( '', $id ) );
+        }
+
     }
 
-    1;
+    $self->next::method( $c, $o );
 }
 
 =head2 new
