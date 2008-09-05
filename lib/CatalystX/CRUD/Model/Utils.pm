@@ -124,18 +124,20 @@ sub _which_sort {
 }
 
 sub make_sql_query {
-    my $self        = shift;
-    my $c           = $self->context;
-    my $field_names = shift
+    my $self = shift;
+    my $c    = $self->context;
+    my $field_names 
+        = shift
         || $c->controller->field_names($c)
         || $self->throw_error("field_names required");
 
-    my $p2q       = $self->params_to_sql_query($field_names);
-    my $params    = $c->req->params;
-    my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
-    my $s         = join( ' ', map {%$_} @$sp );
-    my $offset    = $params->{'cxc-offset'} || $params->{'_offset'};
-    my $page_size = $params->{'cxc-page_size'}
+    my $p2q    = $self->params_to_sql_query($field_names);
+    my $params = $c->req->params;
+    my $sp     = Sort::SQL->string2array( $self->_which_sort($c) );
+    my $s      = join( ' ', map {%$_} @$sp );
+    my $offset = $params->{'cxc-offset'} || $params->{'_offset'};
+    my $page_size 
+        = $params->{'cxc-page_size'}
         || $params->{'_page_size'}
         || $c->controller->page_size
         || $self->page_size;
@@ -232,8 +234,8 @@ sub params_to_sql_query {
 
     for my $p (@$field_names) {
 
-        next unless exists $c->req->params->{$p};
-        my @v = $c->req->param($p);
+        next unless exists $params->{$p};
+        my @v = ref $params->{$p} ? @{ $params->{$p} } : ( $params->{$p} );
         next unless grep { defined && m/./ } @v;
         my @copy = @v;
         $query{$p} = \@v;
