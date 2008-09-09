@@ -4,6 +4,8 @@ use warnings;
 use base qw( CatalystX::CRUD Class::Accessor::Fast );
 use Sort::SQL;
 use Data::Pageset;
+use Search::QueryParser::SQL;
+
 __PACKAGE__->mk_accessors(qw( use_ilike ne_sign ));
 
 our $VERSION = '0.30';
@@ -128,6 +130,7 @@ sub make_sql_query {
     my $c    = $self->context;
     my $field_names 
         = shift
+        || $c->req->params->{'cxc-query-fields'}
         || $c->controller->field_names($c)
         || $self->throw_error("field_names required");
 
@@ -160,8 +163,9 @@ sub make_sql_query {
         limit           => $page_size,
         offset          => $offset,
         sort_order      => $sp,
-        plain_query     => $p2q->{query},
-        plain_query_str => $self->sql_query_as_string( $p2q->{query} ),
+        plain_query     => $p2q->{query_hash},
+        plain_query_str => $p2q->{query}->stringify,
+        query_obj       => $p2q->{query},
     );
 
     # undo what we've done if asked.
@@ -174,31 +178,12 @@ sub make_sql_query {
 
 }
 
-=head2 sql_query_as_string( params_to_sql_query->{query} )
-
-Returns the request params as a SQL WHERE string.
-
-=cut
-
-sub sql_query_as_string {
-    my ( $self, $q ) = @_;
-    my @s;
-    for my $p ( sort keys %$q ) {
-        my @v = @{ $q->{$p} };
-        next unless grep {m/\S/} @v;
-        push( @s, "$p = " . join( ' OR ', @v ) );
-    }
-    my $params = $self->context->req->params;
-    my $op = $params->{'cxc-op'} || $params->{'_op'} || 'AND';
-    return join( " $op ", @s );
-}
-
 =head2 params_to_sql_query( I<field_names> )
 
 Convert request->params into a SQL-oriented
 query.
 
-Returns a hashref with two key/value pairs:
+Returns a hashref with three key/value pairs:
 
 =over
 
@@ -206,9 +191,14 @@ Returns a hashref with two key/value pairs:
 
 Arrayref of ORM-friendly SQL constructs.
 
-=item query
+=item query_hash
 
 Hashref of column_name => raw_values_as_arrayref.
+
+=item query
+
+The Search::QueryParser::SQL::Query object used
+to generate C<sql>.
 
 =back
 
@@ -219,58 +209,101 @@ Called internally by make_sql_query().
 sub params_to_sql_query {
     my ( $self, $field_names ) = @_;
     my $c = $self->context;
-    my ( @sql, %query );
+    my ( @sql, %pq );
     my $ne = $self->ne_sign || '!=';
     my $like = $self->use_ilike ? 'ilike' : 'like';
     my $treat_like_int
         = $self->can('treat_like_int') ? $self->treat_like_int : {};
     my $params = $c->req->params;
-    my $oper = $params->{'cxc-op'} || $params->{'_op'};
-    my $ORify
-        = ( defined $oper && $oper eq 'OR' )
-        ? 1
-        : 0;
-    my $fuzzy = $params->{'cxc-fuzzy'} || $params->{'_fuzzy'} || 0;
+    my $oper   = $params->{'cxc-op'} || $params->{'_op'} || 'AND';
+    my $fuzzy  = $params->{'cxc-fuzzy'} || $params->{'_fuzzy'} || 0;
 
-    for my $p (@$field_names) {
+    my %columns;
+    for my $fn (@$field_names) {
+        $columns{$fn} = exists $treat_like_int->{$fn} ? 'int' : 'char';
+    }
 
-        next unless exists $params->{$p};
-        my @v = ref $params->{$p} ? @{ $params->{$p} } : ( $params->{$p} );
-        next unless grep { defined && m/./ } @v;
-        my @copy = @v;
-        $query{$p} = \@v;
-        if ($fuzzy) {
-            grep { $_ .= '%' unless m/[\%\*]/ } @copy;
-        }
+    my @param_query;
 
-        # normalize wildcards and set sql
-        if ( grep {/[\%\*]|^!/} @copy ) {
-            grep {s/\*/\%/g} @copy;
-            my @wild = grep {m/\%/} @copy;
-            if (@wild) {
-                if ( exists $treat_like_int->{$p} ) {
-                    push( @sql,
-                        ( $p => { 'ge' => [ map {m/^(.+?)\%/} @wild ] } ) );
-                }
-                else {
-                    push( @sql, ( $p => { $like => \@wild } ) );
-                }
-            }
+    # if cxc-query is present, prefer that.
+    # otherwise, any params matching those in $field_names
+    # are each parsed as individual queries, serialized and joined
+    # with $oper.
+    # cxc-query should be free from sql-injection attack as
+    # long as Models use 'sql' or 'query'->dbi in returned hashref
+    if ( exists $params->{'cxc-query'} ) {
+        my $q
+            = ref $params->{'cxc-query'}
+            ? $params->{'cxc-query'}->[0]
+            : $params->{'cxc-query'};
 
-            # allow for negation of query
-            my @not = grep {m/^!/} @copy;
-            if (@not) {
-                push( @sql, ( $p => { $ne => [ grep {s/^!//} @not ] } ) );
+        if ( exists $params->{'cxc-query-fields'} ) {
+            for my $field ( @{ $params->{'cxc-query-fields'} } ) {
+                next unless grep { $_ eq $field } @$field_names;
+                $pq{$field} = [$q];
+                push( @param_query, "$field=($q)" );
             }
         }
         else {
-            push( @sql, $p => [@copy] );
+            @param_query = ($q);
+            $pq{'cxc-query'} = \@param_query;
+        }
+    }
+    else {
+        for (@$field_names) {
+            next unless exists $params->{$_};
+            my @v
+                = ref $params->{$_} ? @{ $params->{$_} } : ( $params->{$_} );
+
+            grep {s/\+/ /g} @v;    # TODO URI + for space -- is this right?
+
+            $pq{$_} = \@v;
+
+            # we don't want to "double encode" $like because it will
+            # be re-parsed as a word not an op, so we have our a modified
+            # parser for per-field queries.
+            my $parser = Search::QueryParser::SQL->new(
+                like    => '=',
+                fuzzify => $fuzzy,
+                columns => \%columns,
+                strict  => 1,
+            );
+
+            my $query;
+            eval {
+                $query = $parser->parse( "$_ = (" . join( ' ', @v ) . ')' );
+            };
+            return $self->throw_error($@) if $@;
+
+            push @param_query, $query->stringify;
         }
     }
 
+    Carp::carp Data::Dump::dump \@param_query;
+
+    my $parser = Search::QueryParser::SQL->new(
+        like    => $like,
+        fuzzify => $fuzzy,
+        columns => \%columns,
+        strict  => 1,
+    );
+
+    # must eval and re-throw since we run under strict
+    my $query;
+    eval {
+        $query
+            = $parser->parse( join( ' ', @param_query ), uc($oper) eq 'AND' );
+    };
+    return $self->throw_error($@) if $@;
+
+    my $sql = $query->rdbo;
+
+    #Carp::carp Data::Dump::dump $sql;
+
     return {
-        sql => ( scalar(@sql) > 2 && $ORify ) ? [ 'or' => \@sql ] : \@sql,
-        query => \%query
+        sql        => $sql,
+        query      => $query,
+        query_hash => \%pq,
     };
 }
 

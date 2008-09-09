@@ -154,5 +154,13 @@ Revision history for CatalystX-CRUD
           This allows for changing the PK as part of an update.
         * add new() in REST to call next::method. Works around (some) multiple inheritance issues.
         * check for $c->res->location before redirecting in postcommit()
+        * Model::Utils was refactored to use Search::QueryParser::SQL. The following methods were affected:
+           * sql_query_as_string() -- removed
+           * params_to_sql_query() -- now returns hashref with 3 items:
+                     - query isa Search::QueryParser::SQL::Query object
+                     - query_hash (formerly query) is a simple param-name => [values] hashref
+                     - sql is the output of S::QP::S::Query->rdbo
+           * make_sql_query() -- returned hash ref now has query_hash as plain_query value
+             and the stringify'd Query object as plain_query_str
 
 
