@@ -101,6 +101,17 @@ or offset value.
 If set to C<OR> then the query columns will be marked as OR'd together,
 rather than AND'd together (the default).
 
+=item cxc-query
+
+The query string to use. This overrides any param values set for
+field names.
+
+=item cxc-query-fields
+
+Which field names to set as 'default_column' in the Search::QueryParser::SQL
+parser object. The default is all I<field_names>. B<NOTE> this param is only
+checked if C<cxc-query> has a value.
+
 =back
 
 =cut
@@ -126,21 +137,19 @@ sub _which_sort {
 }
 
 sub make_sql_query {
-    my $self = shift;
-    my $c    = $self->context;
-    my $field_names 
-        = shift
+    my $self        = shift;
+    my $c           = $self->context;
+    my $field_names = shift
         || $c->req->params->{'cxc-query-fields'}
         || $c->controller->field_names($c)
         || $self->throw_error("field_names required");
 
-    my $p2q    = $self->params_to_sql_query($field_names);
-    my $params = $c->req->params;
-    my $sp     = Sort::SQL->string2array( $self->_which_sort($c) );
-    my $s      = join( ' ', map {%$_} @$sp );
-    my $offset = $params->{'cxc-offset'} || $params->{'_offset'};
-    my $page_size 
-        = $params->{'cxc-page_size'}
+    my $p2q       = $self->params_to_sql_query($field_names);
+    my $params    = $c->req->params;
+    my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
+    my $s         = join( ' ', map {%$_} @$sp );
+    my $offset    = $params->{'cxc-offset'} || $params->{'_offset'};
+    my $page_size = $params->{'cxc-page_size'}
         || $params->{'_page_size'}
         || $c->controller->page_size
         || $self->page_size;
@@ -164,8 +173,12 @@ sub make_sql_query {
         offset          => $offset,
         sort_order      => $sp,
         plain_query     => $p2q->{query_hash},
-        plain_query_str => $p2q->{query}->stringify,
-        query_obj       => $p2q->{query},
+        plain_query_str => (
+            defined $p2q->{query}
+            ? $p2q->{query}->stringify
+            : ''
+        ),
+        query_obj => $p2q->{query},
     );
 
     # undo what we've done if asked.
@@ -223,7 +236,7 @@ sub params_to_sql_query {
         $columns{$fn} = exists $treat_like_int->{$fn} ? 'int' : 'char';
     }
 
-    my @param_query;
+    my ( @param_query, @default_columns );
 
     # if cxc-query is present, prefer that.
     # otherwise, any params matching those in $field_names
@@ -238,16 +251,16 @@ sub params_to_sql_query {
             : $params->{'cxc-query'};
 
         if ( exists $params->{'cxc-query-fields'} ) {
-            for my $field ( @{ $params->{'cxc-query-fields'} } ) {
-                next unless grep { $_ eq $field } @$field_names;
-                $pq{$field} = [$q];
-                push( @param_query, "$field=($q)" );
-            }
+            @default_columns
+                = ref $params->{'cxc-query-fields'}
+                ? @{ $params->{'cxc-query-fields'} }
+                : ( $params->{'cxc-query-fields'} );
+
         }
-        else {
-            @param_query = ($q);
-            $pq{'cxc-query'} = \@param_query;
-        }
+
+        @param_query = ($q);
+        $pq{'cxc-query'} = \@param_query;
+
     }
     else {
         for (@$field_names) {
@@ -279,24 +292,33 @@ sub params_to_sql_query {
         }
     }
 
-    Carp::carp Data::Dump::dump \@param_query;
+    #Carp::carp Data::Dump::dump \@param_query;
 
-    my $parser = Search::QueryParser::SQL->new(
-        like    => $like,
-        fuzzify => $fuzzy,
-        columns => \%columns,
-        strict  => 1,
-    );
-
-    # must eval and re-throw since we run under strict
+    my $joined_query = join( ' ', @param_query );
+    my $sql = [];
     my $query;
-    eval {
-        $query
-            = $parser->parse( join( ' ', @param_query ), uc($oper) eq 'AND' );
-    };
-    return $self->throw_error($@) if $@;
 
-    my $sql = $query->rdbo;
+    if ( length $joined_query ) {
+
+        my $parser = Search::QueryParser::SQL->new(
+            like           => $like,
+            fuzzify        => $fuzzy,
+            columns        => \%columns,
+            default_column => (
+                @default_columns
+                ? \@default_columns
+                : [ keys %columns ]
+            ),
+            strict => 1,
+        );
+
+        # must eval and re-throw since we run under strict
+        eval { $query = $parser->parse( $joined_query, uc($oper) eq 'AND' ); };
+        return $self->throw_error($@) if $@;
+
+        $sql = $query->rdbo;
+
+    }
 
     #Carp::carp Data::Dump::dump $sql;
 
