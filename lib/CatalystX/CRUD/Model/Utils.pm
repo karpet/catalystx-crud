@@ -174,7 +174,7 @@ sub make_sql_query {
         sort_order      => $sp,
         plain_query     => $p2q->{query_hash},
         plain_query_str => (
-            defined $p2q->{query}
+              $p2q->{query}
             ? $p2q->{query}->stringify
             : ''
         ),
@@ -295,8 +295,8 @@ sub params_to_sql_query {
     #Carp::carp Data::Dump::dump \@param_query;
 
     my $joined_query = join( ' ', @param_query );
-    my $sql = [];
-    my $query;
+    my $sql          = [];
+    my $query        = '';
 
     if ( length $joined_query ) {
 
