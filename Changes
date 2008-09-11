@@ -139,7 +139,7 @@ Revision history for CatalystX-CRUD
         * refactored REST controller to support related methods and provide better
           HTTP status checks and responses.
 
-0.30    xxx
+0.30    11 Sept 2008
         * fix uninit value warning in Controller
         * change REST create() : Local to _rest_create() : Path('create') to make it easier for
           create_form() to call create() in superclass.

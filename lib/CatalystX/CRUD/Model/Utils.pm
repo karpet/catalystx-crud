@@ -5,6 +5,7 @@ use base qw( CatalystX::CRUD Class::Accessor::Fast );
 use Sort::SQL;
 use Data::Pageset;
 use Search::QueryParser::SQL;
+use Carp;
 
 __PACKAGE__->mk_accessors(qw( use_ilike ne_sign ));
 
@@ -54,7 +55,7 @@ might be all date/timestamp columns.
 
 Returns a hashref suitable for passing to a SQL-oriented model.
 
-I<field_names> should be an array of valid form field names.
+I<field_names> should be an array of valid column names.
 If false or missing, will call $c->controller->field_names().
 
 The following reserved request param names are implemented:
@@ -137,10 +138,9 @@ sub _which_sort {
 }
 
 sub make_sql_query {
-    my $self = shift;
-    my $c    = $self->context;
-    my $field_names 
-        = shift
+    my $self        = shift;
+    my $c           = $self->context;
+    my $field_names = shift
         || $c->req->params->{'cxc-query-fields'}
         || $c->controller->field_names($c)
         || $self->throw_error("field_names required");
@@ -153,13 +153,12 @@ sub make_sql_query {
         $field_names = $c->req->params->{'cxc-query-fields'};
     }
 
-    my $p2q    = $self->params_to_sql_query($field_names);
-    my $params = $c->req->params;
-    my $sp     = Sort::SQL->string2array( $self->_which_sort($c) );
-    my $s      = join( ' ', map {%$_} @$sp );
-    my $offset = $params->{'cxc-offset'} || $params->{'_offset'};
-    my $page_size 
-        = $params->{'cxc-page_size'}
+    my $p2q       = $self->params_to_sql_query($field_names);
+    my $params    = $c->req->params;
+    my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
+    my $s         = join( ' ', map {%$_} @$sp );
+    my $offset    = $params->{'cxc-offset'} || $params->{'_offset'};
+    my $page_size = $params->{'cxc-page_size'}
         || $params->{'_page_size'}
         || $c->controller->page_size
         || $self->page_size;
@@ -231,6 +230,9 @@ Called internally by make_sql_query().
 
 sub params_to_sql_query {
     my ( $self, $field_names ) = @_;
+    croak "field_names ARRAY ref required"
+        unless defined $field_names
+            and ref($field_names) eq 'ARRAY';
     my $c = $self->context;
     my ( @sql, %pq );
     my $ne = $self->ne_sign || '!=';
@@ -281,8 +283,8 @@ sub params_to_sql_query {
             grep {s/\+/ /g} @v;    # TODO URI + for space -- is this right?
 
             $pq{$_} = \@v;
-            
-            next unless grep { m/\S/ } @v;
+
+            next unless grep {m/\S/} @v;
 
             # we don't want to "double encode" $like because it will
             # be re-parsed as a word not an op, so we have our a modified
