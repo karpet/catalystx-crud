@@ -137,19 +137,29 @@ sub _which_sort {
 }
 
 sub make_sql_query {
-    my $self        = shift;
-    my $c           = $self->context;
-    my $field_names = shift
+    my $self = shift;
+    my $c    = $self->context;
+    my $field_names 
+        = shift
         || $c->req->params->{'cxc-query-fields'}
         || $c->controller->field_names($c)
         || $self->throw_error("field_names required");
 
-    my $p2q       = $self->params_to_sql_query($field_names);
-    my $params    = $c->req->params;
-    my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
-    my $s         = join( ' ', map {%$_} @$sp );
-    my $offset    = $params->{'cxc-offset'} || $params->{'_offset'};
-    my $page_size = $params->{'cxc-page_size'}
+    # if present, param overrides default of form->field_names
+    # passed by base controller.
+    if (   exists $c->req->params->{'cxc-query-fields'}
+        && exists $c->req->params->{'cxc-query'} )
+    {
+        $field_names = $c->req->params->{'cxc-query-fields'};
+    }
+
+    my $p2q    = $self->params_to_sql_query($field_names);
+    my $params = $c->req->params;
+    my $sp     = Sort::SQL->string2array( $self->_which_sort($c) );
+    my $s      = join( ' ', map {%$_} @$sp );
+    my $offset = $params->{'cxc-offset'} || $params->{'_offset'};
+    my $page_size 
+        = $params->{'cxc-page_size'}
         || $params->{'_page_size'}
         || $c->controller->page_size
         || $self->page_size;
@@ -271,6 +281,8 @@ sub params_to_sql_query {
             grep {s/\+/ /g} @v;    # TODO URI + for space -- is this right?
 
             $pq{$_} = \@v;
+            
+            next unless grep { m/\S/ } @v;
 
             # we don't want to "double encode" $like because it will
             # be re-parsed as a word not an op, so we have our a modified
