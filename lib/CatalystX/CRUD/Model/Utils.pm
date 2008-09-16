@@ -153,6 +153,10 @@ sub make_sql_query {
         $field_names = $c->req->params->{'cxc-query-fields'};
     }
 
+    if ( !ref($field_names) ) {
+        $field_names = [$field_names];
+    }
+
     my $p2q       = $self->params_to_sql_query($field_names);
     my $params    = $c->req->params;
     my $sp        = Sort::SQL->string2array( $self->_which_sort($c) );
