@@ -5,7 +5,7 @@ use base qw(
     CatalystX::CRUD
     Class::Accessor::Fast
 );
-use Class::C3;
+use mro 'c3';
 use Carp;
 
 __PACKAGE__->mk_accessors(qw( model_name model_meta context app_class ));

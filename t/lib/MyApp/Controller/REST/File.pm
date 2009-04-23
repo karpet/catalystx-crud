@@ -8,7 +8,7 @@ use Carp;
 use Data::Dump qw( dump );
 use File::Temp;
 use MyApp::Form;
-use Class::C3;
+use mro 'c3';
 
 __PACKAGE__->config(
     primary_key => 'absolute',

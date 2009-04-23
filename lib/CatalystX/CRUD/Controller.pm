@@ -8,7 +8,7 @@ use base qw(
 use Carp;
 use Catalyst::Utils;
 use CatalystX::CRUD::Results;
-use Class::C3;
+use mro 'c3';
 use Data::Dump qw( dump );
 
 __PACKAGE__->mk_accessors(
@@ -36,7 +36,7 @@ __PACKAGE__->config(
     naked_results         => 0,
 );
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 =head1 NAME
 
