@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use base qw( Class::Accessor::Fast Class::Data::Inheritable CatalystX::CRUD );
 use Carp;
+use MRO::Compat;
 use mro 'c3';
 Class::C3::initialize();
 

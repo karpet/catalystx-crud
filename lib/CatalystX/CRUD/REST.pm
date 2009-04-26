@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use base qw( CatalystX::CRUD::Controller );
 use Carp;
+use MRO::Compat;
 use mro 'c3';
 use Data::Dump qw( dump );
 
@@ -71,7 +72,8 @@ MyApp.pm file, just after the setup() call:
  __PACKAGE__->setup();
  
  # add these 2 lines
- use mro 'c3';
+ use MRO::Compat;
+use mro 'c3';
  Class::C3::initialize();
 
 This is required for Class::C3 to resolve the inheritance chain correctly,

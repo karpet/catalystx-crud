@@ -1,6 +1,7 @@
 package CatalystX::CRUD::Model;
 use strict;
 use warnings;
+use MRO::Compat;
 use mro 'c3';
 use base qw(
     Catalyst::Component::ACCEPT_CONTEXT

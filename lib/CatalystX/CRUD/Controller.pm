@@ -8,6 +8,7 @@ use base qw(
 use Carp;
 use Catalyst::Utils;
 use CatalystX::CRUD::Results;
+use MRO::Compat;
 use mro 'c3';
 use Data::Dump qw( dump );
 

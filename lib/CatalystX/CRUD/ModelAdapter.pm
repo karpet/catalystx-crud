@@ -5,6 +5,7 @@ use base qw(
     CatalystX::CRUD
     Class::Accessor::Fast
 );
+use MRO::Compat;
 use mro 'c3';
 use Carp;
 

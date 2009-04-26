@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use base qw( Class::Accessor::Fast );
 use Carp;
+use MRO::Compat;
 use mro 'c3';
 
 __PACKAGE__->mk_ro_accessors(qw( count pager query results ));
