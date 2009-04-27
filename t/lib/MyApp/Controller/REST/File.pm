@@ -8,6 +8,7 @@ use Carp;
 use Data::Dump qw( dump );
 use File::Temp;
 use MyApp::Form;
+use MRO::Compat;
 use mro 'c3';
 
 __PACKAGE__->config(
