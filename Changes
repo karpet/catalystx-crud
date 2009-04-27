@@ -202,7 +202,7 @@ Revision history for CatalystX-CRUD
         * remove Catalyst::Component::ACCEPT_CONTEXT as a dependency since it has not been
           updated for Catalyst 5.8.
 
-0.42    xxx
+0.42    27 April 2009
         * revert ACCEPT_CONTEXT changes; fixes pushed to new C::C::A_C on CPAN, and added no warnings
           using Class::C3::Adopt::NEXT (thanks to t0m)
         * change from 'use Class::C3' to 'use mro "c3"' with new dep on MRO::Compat
