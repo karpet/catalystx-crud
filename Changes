@@ -220,4 +220,10 @@ Revision history for CatalystX-CRUD
 
 0.45    13 June 2009
         * fix multi-column sort via cxc-order param (requires Sort::SQL 0.04)
+
+0.46    xxx
+        * tweek Model::File _find to avoid multiple loops over the same list of root dirs.
+        * tweek Model::File->search to read() each object like fetch() does.
+
+        
  
