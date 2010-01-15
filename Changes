@@ -229,4 +229,6 @@ Revision history for CatalystX-CRUD
         
 0.47    xxx
         * fix tutorial per RT#53396
- 
+        * fix bug in base Controller->fetch() where multiple PKs where one value is null were slipping
+          through. Reported by Adam Mackler.
+
