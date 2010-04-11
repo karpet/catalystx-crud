@@ -909,7 +909,7 @@ sub do_search {
     }
 
     # turn flag on unless explicitly turned off
-    $c->stash->{view_on_single_result} = 'edit' 
+    $c->stash->{view_on_single_result} = 1
         unless exists $c->stash->{view_on_single_result};
 
     my $query;
