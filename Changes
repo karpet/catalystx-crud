@@ -247,3 +247,5 @@ Revision history for CatalystX-CRUD
         * added use_request_uri_for_path to test MyApp to fix 
           test failures with Catalyst::Runtime 5.80024
 
+0.52    xxx
+        * doc fix in Tutorial via RT#68499
