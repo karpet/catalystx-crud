@@ -206,10 +206,8 @@ sub _rest_related {
         }
     }
 
-    my $http_method = $self->req_method($c);
-
-    $self->related( $c, $rel_name, $fval );
-
+    my $http_method     = $self->req_method($c);
+    my $dispatch_method = 'related';
     my $rpc_method;
     if ($rpc) {
         $rpc_method = $rpc;
@@ -221,7 +219,15 @@ sub _rest_related {
         $rpc_method = 'remove';
     }
     elsif ( $http_method eq 'GET' ) {
-        $rpc_method = defined $fval ? 'view_related' : 'list_related';
+        if ( $fval eq 'list' ) {
+            $rpc_method      = 'list_related';
+            $dispatch_method = 'fetch_related';
+        }
+        else {
+            $c->res->status(400);
+            $c->res->body("Bad HTTP request for method $http_method");
+            return;
+        }
     }
     else {
 
@@ -231,7 +237,7 @@ sub _rest_related {
         $c->res->body("Bad HTTP request for method $http_method");
         return;
     }
-
+    $self->$dispatch_method( $c, $rel_name, $fval );
     $self->_call_rpc_method_as_action( $c, $rpc_method, $oid );
 }
 
@@ -361,6 +367,22 @@ Overrides base method to disable chaining.
 =cut
 
 sub add { shift->next::method(@_) }
+
+=head2 view_related( I<context> )
+
+Overrides base method to disable chaining.
+
+=cut
+
+sub view_related { shift->next::method(@_) }
+
+=head2 list_related( I<context> )
+
+Overrides base method to disable chaining.
+
+=cut
+
+sub list_related { shift->next::method(@_) }
 
 =head2 delete( I<context> )
 

@@ -652,9 +652,21 @@ sub add : PathPart Chained('related') Args(0) {
     $c->res->status(204);    # enacted, no content
 }
 
+=head2 fetch_related
+
+Attribute: chained to fetch() like related() is.
+
+=cut
+
+sub fetch_related : PathPart('') Chained('fetch') CaptureArgs(1) {
+    my ( $self, $c, $rel ) = @_;
+    return if $self->has_errors($c);
+    $c->stash( rel_name => $rel );
+}
+
 =head2 list_related
 
-Attribute: chained to related().
+Attribute: chained to fetch_related().
 
 Returns list of related objects.
 
@@ -666,23 +678,28 @@ will return groups related to user C<123>.
 
 =cut
 
-sub list_related : PathPart('list') Chained('fetch') CaptureArgs(1) {
+sub list_related : PathPart('list') Chained('fetch_related') Args(0) {
     my ( $self, $c, $rel ) = @_;
     return if $self->has_errors($c);
-    $self->do_model( $c, 'search_related', $c->stash->{object}, $rel, );
+    $c->stash(
+        results => $self->do_model(
+            $c,                  'search_related',
+            $c->stash->{object}, $c->stash->{rel_name},
+        )
+    );
 }
 
 =head2 view_related
 
 Attribute: chained to related().
 
-Returns list of related objects.
+Returns list of related objects based on foreign key value.
 
 Example:
 
  http://yoururl/user/123/group/456/view
 
-will return groups related to user C<123>.
+will return groups of pk C<456> related to user C<123>.
 
 =cut
 
