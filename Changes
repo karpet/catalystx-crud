@@ -251,3 +251,5 @@ Revision history for CatalystX-CRUD
         * doc fix in Tutorial via RT#68499
         * tests fixed for RT#68779
 
+0.53    xxx
+        * add list_related and view_related controller actions.
