@@ -260,6 +260,11 @@ It is up to the subclass to implement this method.
 
 remove_related() is an alias for rm_related().
 
+=item find_related( I<obj>, I<rel_name>, I<foreign_value> )
+
+Return related object for I<foreign_value> based on I<rel_name>
+for I<obj>.
+
 =item has_relationship( I<obj>, I<rel_name> )
 
 Should return true or false as to whether I<rel_name> exists for
