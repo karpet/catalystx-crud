@@ -581,14 +581,6 @@ sub related : PathPart('') Chained('fetch') CaptureArgs(2) {
         $self->throw_error('Permission denied');
         return;
     }
-    if ( !$self->allow_GET_writes ) {
-        if ( uc( $c->req->method ) ne 'POST' ) {
-            $c->res->status(400);
-            $c->res->body('GET request not allowed');
-            $c->stash->{error} = 1;    # so has_errors() will return true
-            return;
-        }
-    }
     $c->stash( rel_name         => $rel );
     $c->stash( foreign_pk_value => $fpk_value );
 }
@@ -611,8 +603,24 @@ on success.
 
 =cut
 
+sub _check_idempotent {
+    my ( $self, $c ) = @_;
+    if ( !$self->allow_GET_writes ) {
+        if ( uc( $c->req->method ) ne 'POST' ) {
+            $c->log->warn( "allow_GET_writes!=true, related method="
+                    . uc( $c->req->method ) );
+            $c->res->status(405);
+            $c->res->header( 'Allow' => 'POST' );
+            $c->res->body('GET request not allowed');
+            $c->stash->{error} = 1;    # so has_errors() will return true
+            return;
+        }
+    }
+}
+
 sub remove : PathPart Chained('related') Args(0) {
     my ( $self, $c ) = @_;
+    $self->_check_idempotent($c);
     return if $self->has_errors($c);
     $self->do_model(
         $c, 'rm_related', $c->stash->{object},
@@ -643,6 +651,7 @@ on success.
 
 sub add : PathPart Chained('related') Args(0) {
     my ( $self, $c ) = @_;
+    $self->_check_idempotent($c);
     return if $self->has_errors($c);
     $self->do_model(
         $c, 'add_related', $c->stash->{object},
@@ -680,13 +689,17 @@ will return groups related to user C<123>.
 
 sub list_related : PathPart('list') Chained('fetch_related') Args(0) {
     my ( $self, $c, $rel ) = @_;
+    unless ( $self->can_read($c) ) {
+        $self->throw_error('Permission denied');
+        return;
+    }
     return if $self->has_errors($c);
-    $c->stash(
-        results => scalar $self->do_model(
-            $c,                  'iterator_related',
-            $c->stash->{object}, $c->stash->{rel_name},
-        )
-    );
+    $self->view($c);    # set form
+    my $results
+        = $self->do_model( $c, 'iterator_related', $c->stash->{object},
+        $c->stash->{rel_name},
+        );
+    $c->stash( results => $results );
 }
 
 =head2 view_related
@@ -705,12 +718,18 @@ will return groups of pk C<456> related to user C<123>.
 
 sub view_related : PathPart('view') Chained('related') Args(0) {
     my ( $self, $c ) = @_;
+    unless ( $self->can_read($c) ) {
+        $self->throw_error('Permission denied');
+        return;
+    }
     return if $self->has_errors($c);
-    $self->do_model(
+    $self->view($c);    # set form
+    my $result = $self->do_model(
         $c, 'find_related', $c->stash->{object},
         $c->stash->{rel_name},
         $c->stash->{foreign_pk_value}
     );
+    $c->stash( results => $result );
 }
 
 =head1 INTERNAL METHODS
