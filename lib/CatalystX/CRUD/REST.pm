@@ -71,9 +71,9 @@ MyApp.pm file, just after the setup() call:
 
  __PACKAGE__->setup();
  
- # add these 2 lines
+ # add these 3 lines
  use MRO::Compat;
-use mro 'c3';
+ use mro 'c3';
  Class::C3::initialize();
 
 This is required for Class::C3 to resolve the inheritance chain correctly,
