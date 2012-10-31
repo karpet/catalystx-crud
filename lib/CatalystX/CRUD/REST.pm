@@ -139,7 +139,7 @@ my %http_method_map = (
 my %rpc_methods
     = map { $_ => 1 } qw( create read update delete edit save rm view );
 my %related_methods
-    = map { $_ => 1 } qw( add remove list_related view_related );
+    = map { $_ => 1 } qw( add remove list_related view_related view );
 
 sub rest : Path {
     my ( $self, $c, @arg ) = @_;
@@ -202,6 +202,7 @@ sub _rest_related {
 
     if ($rpc) {
         if ( !$self->enable_rpc_compat or !exists $related_methods{$rpc} ) {
+            $c->log->debug("unmapped rpc:$rpc") if $c->debug;
             $self->_set_status_404($c);
             return;
         }
@@ -212,6 +213,11 @@ sub _rest_related {
     my $rpc_method;
     if ($rpc) {
         $rpc_method = $rpc;
+
+        # mimic PathPart
+        if ( $rpc_method eq 'view' ) {
+            $rpc_method = 'view_related';
+        }
     }
     elsif ( $http_method eq 'POST' or $http_method eq 'PUT' ) {
         $rpc_method = 'add';
@@ -261,11 +267,11 @@ sub _rest {
         if $c->debug;
 
     if ( length $oid and $rpc ) {
-        if ( exists $rpc_methods{$rpc} ) {
+        if ( $self->enable_rpc_compat and exists $rpc_methods{$rpc} ) {
 
             # do nothing - logic below
         }
-        elsif ( $http_method eq 'GET' ) {
+        elsif ( $self->enable_rpc_compat and $http_method eq 'GET' ) {
 
             # same logic as !length $oid below:
             # assume that $rpc is a relationship name

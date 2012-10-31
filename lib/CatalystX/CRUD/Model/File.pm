@@ -224,6 +224,25 @@ sub iterator {
     return CatalystX::CRUD::Iterator::File->new($files);
 }
 
+=head2 iterator_related( I<file>, I<rel_name> )
+
+Required method. Acts like iterator() for I<rel_name>.
+
+=cut
+
+sub iterator_related {
+    my $self     = shift;
+    my $file     = shift or $self->throw_error('file required');
+    my $rel_name = shift or $self->throw_error('rel_name required');
+    if ( $rel_name eq 'dir' ) {
+        my $files = $self->search(@_);
+        return CatalystX::CRUD::Iterator::File->new($files);
+    }
+    else {
+        $self->throw_error("unsupported relationship name: $rel_name");
+    }
+}
+
 =head2 add_related( I<file>, I<rel_name>, I<other_file_name> )
 
 For I<rel_name> of "dir" will create a symlink for I<other_file_name>'s
