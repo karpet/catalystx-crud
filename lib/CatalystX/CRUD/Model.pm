@@ -9,7 +9,7 @@ use base qw(
     Catalyst::Model
 );
 
-our $VERSION = '0.52';
+our $VERSION = '0.52_01';
 
 __PACKAGE__->mk_accessors(qw( object_class page_size ));
 
@@ -275,6 +275,7 @@ sub make_query  { shift->throw_error("must implement make_query()") }
 sub add_related { shift->throw_error("must implement add_related()") }
 sub rm_related  { shift->throw_error("must implement rm_related()") }
 *remove_related = \&rm_related;
+sub find_related { shift->throw_error("must implement view_related()") }
 
 sub has_relationship {
     shift->throw_error("must implement has_relationship()");

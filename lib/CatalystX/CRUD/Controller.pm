@@ -37,7 +37,7 @@ __PACKAGE__->config(
     naked_results         => 0,
 );
 
-our $VERSION = '0.52';
+our $VERSION = '0.52_01';
 
 =head1 NAME
 
@@ -51,18 +51,18 @@ CatalystX::CRUD::Controller - base class for CRUD controllers
     use base qw( CatalystX::CRUD::Controller );
     
     __PACKAGE__->config(
-            form_class              => 'MyForm::Foo',
-            init_form               => 'init_with_foo',
-            init_object             => 'foo_from_form',
-            default_template        => 'path/to/foo/edit.tt',
-            model_name              => 'Foo',
-            model_adapter           => 'FooAdapter', # optional
-            model_meta              => { moniker => 'SomeTable' },  # optional
-            primary_key             => 'id',
-            view_on_single_result   => 0,
-            page_size               => 50,
-            allow_GET_writes        => 0,
-            naked_results           => 0,
+        form_class              => 'MyForm::Foo',
+        init_form               => 'init_with_foo',
+        init_object             => 'foo_from_form',
+        default_template        => 'path/to/foo/edit.tt',
+        model_name              => 'Foo',
+        model_adapter           => 'FooAdapter', # optional
+        model_meta              => { moniker => 'SomeTable' },  # optional
+        primary_key             => 'id',
+        view_on_single_result   => 0,
+        page_size               => 50,
+        allow_GET_writes        => 0,
+        naked_results           => 0,
     );
                     
     1;
@@ -73,6 +73,8 @@ CatalystX::CRUD::Controller - base class for CRUD controllers
     #  foo/<pk>/view
     #  foo/<pk>/save
     #  foo/<pk>/rm
+    #  foo/<pk>/<relname>/<pk2>/add
+    #  foo/<pk>/<relname>/<pk2>/rm
     #  foo/create
     #  foo/list
     #  foo/search
@@ -648,6 +650,50 @@ sub add : PathPart Chained('related') Args(0) {
         $c->stash->{foreign_pk_value}
     );
     $c->res->status(204);    # enacted, no content
+}
+
+=head2 list_related
+
+Attribute: chained to related().
+
+Returns list of related objects.
+
+Example:
+
+ http://yoururl/user/123/group/list
+
+will return groups related to user C<123>.
+
+=cut
+
+sub list_related : PathPart('list') Chained('fetch') CaptureArgs(1) {
+    my ( $self, $c, $rel ) = @_;
+    return if $self->has_errors($c);
+    $self->do_model( $c, 'search_related', $c->stash->{object}, $rel, );
+}
+
+=head2 view_related
+
+Attribute: chained to related().
+
+Returns list of related objects.
+
+Example:
+
+ http://yoururl/user/123/group/456/view
+
+will return groups related to user C<123>.
+
+=cut
+
+sub view_related : PathPart('view') Chained('related') Args(0) {
+    my ( $self, $c ) = @_;
+    return if $self->has_errors($c);
+    $self->do_model(
+        $c, 'find_related', $c->stash->{object},
+        $c->stash->{rel_name},
+        $c->stash->{foreign_pk_value}
+    );
 }
 
 =head1 INTERNAL METHODS

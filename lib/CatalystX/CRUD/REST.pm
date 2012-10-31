@@ -10,7 +10,7 @@ use Data::Dump qw( dump );
 __PACKAGE__->mk_accessors(qw( enable_rpc_compat ));
 __PACKAGE__->config( enable_rpc_compat => 0 );
 
-our $VERSION = '0.52';
+our $VERSION = '0.52_01';
 
 #warn "REST VERSION = $VERSION";
 
@@ -27,16 +27,16 @@ CatalystX::CRUD::REST - RESTful CRUD controller
     use MyForm::Foo;
     
     __PACKAGE__->config(
-                    form_class              => 'MyForm::Foo',
-                    init_form               => 'init_with_foo',
-                    init_object             => 'foo_from_form',
-                    default_template        => 'path/to/foo/edit.tt',
-                    model_name              => 'Foo',
-                    primary_key             => 'id',
-                    view_on_single_result   => 0,
-                    page_size               => 50,
-                    enable_rpc_compat       => 0,
-                    );
+        form_class              => 'MyForm::Foo',
+        init_form               => 'init_with_foo',
+        init_object             => 'foo_from_form',
+        default_template        => 'path/to/foo/edit.tt',
+        model_name              => 'Foo',
+        primary_key             => 'id',
+        view_on_single_result   => 0,
+        page_size               => 50,
+        enable_rpc_compat       => 0,
+    );
                     
     1;
     
@@ -138,7 +138,8 @@ my %http_method_map = (
 
 my %rpc_methods
     = map { $_ => 1 } qw( create read update delete edit save rm view );
-my %related_methods = map { $_ => 1 } qw( add remove );
+my %related_methods
+    = map { $_ => 1 } qw( add remove list_related view_related );
 
 sub rest : Path {
     my ( $self, $c, @arg ) = @_;
@@ -195,6 +196,8 @@ sub _rest_related {
     my ( $oid, $rel_name, $fval, $rpc ) = @arg;
 
     $c->log->debug("rest_related OID: $oid") if $c->debug;
+    $c->log->debug("rest_related rel_name=$rel_name fval=$fval rpc=$rpc")
+        if $c->debug;
 
     if ($rpc) {
         if ( !$self->enable_rpc_compat or !exists $related_methods{$rpc} ) {
@@ -216,6 +219,9 @@ sub _rest_related {
     }
     elsif ( $http_method eq 'DELETE' ) {
         $rpc_method = 'remove';
+    }
+    elsif ( $http_method eq 'GET' ) {
+        $rpc_method = defined $fval ? 'view_related' : 'list_related';
     }
     else {
 
