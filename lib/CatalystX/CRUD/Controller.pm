@@ -682,8 +682,8 @@ sub list_related : PathPart('list') Chained('fetch_related') Args(0) {
     my ( $self, $c, $rel ) = @_;
     return if $self->has_errors($c);
     $c->stash(
-        results => $self->do_model(
-            $c,                  'search_related',
+        results => scalar $self->do_model(
+            $c,                  'iterator_related',
             $c->stash->{object}, $c->stash->{rel_name},
         )
     );
