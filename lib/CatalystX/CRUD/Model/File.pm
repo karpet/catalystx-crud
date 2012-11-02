@@ -126,7 +126,12 @@ Returns a I<wanted> subroutine suitable for File::Find.
 
 sub make_query {
     my ($self) = @_;
-    return sub {1};
+    return sub {
+        my ( $root, $dir, $f ) = @_;
+        return 0
+            if $dir =~ m!/\.(svn|git)!;
+        return 1;
+    };
 }
 
 =head2 search( I<filter_CODE> )
