@@ -46,8 +46,8 @@ sub new {
     my $class = shift;
     my $self  = $class->next::method(@_);
     my $file  = $self->{file} or $self->throw_error("file param required");
-    $self->{delegate}
-        ||= $self->delegate_class->new( ref $file eq 'ARRAY' ? @$file : $file );
+    $self->{delegate} ||= $self->delegate_class->new(
+        ref $file eq 'ARRAY' ? @$file : $file );
     return $self;
 }
 
@@ -127,8 +127,20 @@ sub _write {
     print {$fh} $self->content;
     $fh->close;
 
-    #warn "file written to $self";
+    #warn length($self->content) . " bytes written to $self";
+
     return -s $self->delegate;
+}
+
+=head2 serialize
+
+Returns the File object as a hashref with 2 keys: path and content.
+
+=cut
+
+sub serialize {
+    my $self = shift;
+    return { path => $self->delegate . "", content => $self->content };
 }
 
 1;

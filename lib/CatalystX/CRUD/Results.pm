@@ -1,16 +1,15 @@
 package CatalystX::CRUD::Results;
-use strict;
-use warnings;
-use base qw( Class::Accessor::Fast );
+use Moose;
+with 'MooseX::Emulate::Class::Accessor::Fast';
 use Carp;
-use Scalar::Util qw( blessed );
 use Data::Dump qw( dump );
 use MRO::Compat;
 use mro 'c3';
-use overload
-    '""'     => sub { return dump( $_[0]->serialize ) . ""; },
-    'bool'   => sub {1},
-    fallback => 1;
+
+#use overload
+#    '""'     => sub { return dump( $_[0]->serialize ) . "" },
+#    'bool'   => sub {1},
+#    fallback => 1;
 
 __PACKAGE__->mk_ro_accessors(qw( count pager query results ));
 

@@ -72,16 +72,38 @@ Read I<path/to/file> from disk and return a CXCO::File object.
 
 I<path/to/file> is assumed to be in C<inc_path>
 
-If I<path/to/file> is empty or cannot be found, the
+If I<path/to/file> is empty, the
 CatalystX::CRUD::Object::File object is returned but its content()
 will be undef. If its parent dir is '.', its dir() 
 will be set to the first item in inc_path().
+
+If I<path/to/file> is not found, undef is returned.
 
 =cut
 
 sub fetch {
     my $self = shift;
     my $file = $self->new_object(@_);
+    $file = $self->prep_new_object($file);
+    return defined -s $file ? $file : undef;
+}
+
+=head2 prep_new_object( I<file> )
+
+Searches inc_path() and calls I<file> read() method
+if file is found.
+
+Also verifies that the delegate() has an absolute path set.
+
+Called internally by fetch().
+
+Returns I<file>.
+
+=cut
+
+sub prep_new_object {
+    my $self = shift;
+    my $file = shift or croak "file required";
 
     # look through inc_path
     for my $dir ( @{ $self->inc_path } ) {
@@ -105,7 +127,6 @@ sub fetch {
     }
 
     #carp dump $file;
-
     return $file;
 }
 
@@ -129,7 +150,7 @@ sub make_query {
     return sub {
         my ( $root, $dir, $f ) = @_;
         return 0
-            if $dir =~ m!/\.(svn|git)!;
+            if $dir and $dir =~ m!/\.(svn|git)!;
         return 1;
     };
 }
