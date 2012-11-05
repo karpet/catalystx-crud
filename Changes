@@ -259,4 +259,4 @@ Revision history for CatalystX-CRUD
         * refactor some Controller methods into a Role class
         * Model::File->fetch() now returns undef if file does not exist. Add Model::File->prep_new_object().
         * add new required method to Object class: is_new()
-
+        * add Model->put_related method
