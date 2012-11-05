@@ -42,7 +42,7 @@ __PACKAGE__->config(
 # apply Role *after* we declare accessors above
 with 'CatalystX::CRUD::ControllerRole';
 
-our $VERSION = '0.53_01';
+our $VERSION = '0.54';
 
 =head1 NAME
 
