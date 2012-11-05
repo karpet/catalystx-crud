@@ -155,13 +155,13 @@ via the relationship I<rel_name>.
 
 It is up to the subclass to implement this method.
 
-=item put_related( I<obj>, I<rel_name>, I<foreign_value> )
+=head2 put_related( I<obj>, I<rel_name>, I<foreign_value> )
 
 Create new related foreign object. Unlike add_related(),
 the foreign object need not already exist. put_related()
 should be idempotent.
 
-=item find_related( I<obj>, I<rel_name>, I<foreign_value> )
+=head2 find_related( I<obj>, I<rel_name>, I<foreign_value> )
 
 Return related object for I<foreign_value> based on I<rel_name>
 for I<obj>.
