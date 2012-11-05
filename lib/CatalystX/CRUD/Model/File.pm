@@ -269,14 +269,15 @@ sub iterator_related {
     }
 }
 
-=head2 add_related( I<file>, I<rel_name>, I<other_file_name> )
+=head2 add_related( I<file>, I<rel_name>, I<other_file_name>, I<overwrite> )
 
 For I<rel_name> of "dir" will create a symlink for I<other_file_name>'s
 basename to I<file> in the same directory as I<file>.
 
 If a file already exists for I<other_file_name> in the same
 dir as I<file> will throw an error indicating the relationship
-already exists.
+already exists. To stop the error being thrown, pass a true
+value for the I<overwrite> param.
 
 If the symlink fails, will throw_error().
 
@@ -324,6 +325,12 @@ sub add_related {
 
     return $other_file;
 }
+
+=head2 put_related( I<file>, I<rel_name>, I<other_file_name> )
+
+Calls add_related() with overwrite option.
+
+=cut
 
 sub put_related {
     my $self = shift;
