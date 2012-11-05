@@ -286,7 +286,7 @@ to the Catalyst log.
 =cut
 
 sub add_related {
-    my ( $self, $file, $rel_name, $other_file_name ) = @_;
+    my ( $self, $file, $rel_name, $other_file_name, $overwrite ) = @_;
 
     if ( !$SYMLINK_SUPPORTED ) {
         $self->context->log->error(
@@ -304,6 +304,9 @@ sub add_related {
 
         # if in the same dir, already related.
         if ( $other_file->dir eq $file->dir ) {
+            if ($overwrite) {
+                return 1;    # nothing to do
+            }
             $self->throw_error("relationship already exists");
         }
 
@@ -318,6 +321,13 @@ sub add_related {
     else {
         $self->throw_error("unsupported relationship name: $rel_name");
     }
+
+    return $other_file;
+}
+
+sub put_related {
+    my $self = shift;
+    return $self->add_related( @_, 1 );    # overwrite
 }
 
 =head2 rm_related( I<file>, I<rel_name>, I<other_file_name> )

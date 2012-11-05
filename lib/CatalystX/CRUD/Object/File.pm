@@ -119,6 +119,17 @@ sub delete {
     return $self->delegate->remove;
 }
 
+=head2 is_new
+
+Returns true if the file does not yet exist.
+
+=cut
+
+sub is_new {
+    my $self = shift;
+    return defined -s $self->delegate ? 0 : 1;
+}
+
 sub _write {
     my $self = shift;
     my $dir  = $self->delegate->dir;
@@ -134,13 +145,13 @@ sub _write {
 
 =head2 serialize
 
-Returns the File object as a hashref with 2 keys: path and content.
+Returns the File object as a hashref with 2 keys: file and content.
 
 =cut
 
 sub serialize {
     my $self = shift;
-    return { path => $self->delegate . "", content => $self->content };
+    return { file => $self->file, content => $self->content };
 }
 
 1;

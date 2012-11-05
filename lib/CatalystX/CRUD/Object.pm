@@ -9,11 +9,6 @@ use Data::Dump qw( dump );
 use MRO::Compat;
 use mro 'c3';
 
-#use overload
-#    '""'     => sub { return dump( $_[0]->serialize ) . "" },
-#    'bool'   => sub {1},
-#    fallback => 1;
-
 __PACKAGE__->mk_ro_accessors(qw( delegate ));
 __PACKAGE__->mk_classdata('delegate_class');
 
@@ -107,6 +102,22 @@ sub create { shift->throw_error("must implement create") }
 sub read   { shift->throw_error("must implement read") }
 sub update { shift->throw_error("must implement update") }
 sub delete { shift->throw_error("must implement delete") }
+
+=head2 is_new
+
+Return results should be boolean indicating whether the object
+already exists or not. Expectation is code like:
+
+ if ($object->is_new) {
+     $object->create;
+ }
+ else {
+     $object->update;
+ }
+
+=cut
+
+sub is_new { shift->throw_error("must implement is_new") }
 
 =head2 serialize
 
