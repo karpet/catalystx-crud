@@ -111,6 +111,7 @@ sub serialize {
         $r->{query} = $q->();
     }
     else {
+        $q->{query_obj} .= "";  # stringify the Query object
         $r->{query} = $q;
     }
 
