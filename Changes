@@ -260,3 +260,7 @@ Revision history for CatalystX-CRUD
         * Model::File->fetch() now returns undef if file does not exist. Add Model::File->prep_new_object().
         * add new required method to Object class: is_new()
         * add Model->put_related method
+
+0.55    28 Jan 2013
+        * add Iterator->serialize() method.
+
