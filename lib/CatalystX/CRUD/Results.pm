@@ -111,7 +111,11 @@ sub serialize {
         $r->{query} = $q->();
     }
     else {
-        $q->{query_obj} .= "";  # stringify the Query object
+        # stringify the Query object, overwrite 'query'.
+        # we do this because some internal objects do not serialize.
+        delete $q->{query};
+        $q->{where} = delete $q->{query_obj};
+        $q->{where} .= '';
         $r->{query} = $q;
     }
 

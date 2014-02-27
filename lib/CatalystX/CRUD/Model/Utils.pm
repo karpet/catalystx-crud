@@ -7,7 +7,7 @@ use Data::Pageset;
 use Search::QueryParser::SQL;
 use Carp;
 
-__PACKAGE__->mk_accessors(qw( use_ilike ne_sign ));
+__PACKAGE__->mk_accessors(qw( use_ilike use_lower ne_sign ));
 
 our $VERSION = '0.56';
 
@@ -303,8 +303,9 @@ sub params_to_sql_query {
 
             next unless grep {m/\S/} @v;
 
-            # we don't want to "double encode" $like because it will
-            # be re-parsed as a word not an op, so we have our a modified
+            # we don't want to "double encode" $like
+            # or $use_lower because it will
+            # be re-parsed as a word not an op, so we have a modified
             # parser for per-field queries.
             my %args = (
                 like    => '=',
@@ -340,6 +341,7 @@ sub params_to_sql_query {
         my %args = (
             like           => $like,
             fuzzify        => $fuzzy,
+            lower          => $self->use_lower,
             columns        => \%columns,
             default_column => (
                 @default_columns
