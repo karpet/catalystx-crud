@@ -183,7 +183,7 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
         $c->res->body( 'No such ' . $self->model_name );
 
         # re-throw so we interrupt chain.
-        $self->throw_error( 'No such ' . $self->model_name );
+        $self->throw_error($_);
     };
 }
 
