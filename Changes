@@ -1,12 +1,11 @@
 Revision history for CatalystX-CRUD
 
-0.56 xxx
+0.56 28 Feb 2014
  - remove : character from rxOp param in internal Search::QueryParser::SQL
    constructor. This allows for finding url values like http://foo/bar
    which previously would be parsed as http=//foo/bar
  - add 'use_lower' feature to Module::Utils to support Search::QueryParser::SQL
    version 0.010.
-
 
 0.55 28 Jan 2013
  - add Iterator->serialize() method.
