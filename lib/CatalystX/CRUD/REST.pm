@@ -6,11 +6,12 @@ use Carp;
 use MRO::Compat;
 use mro 'c3';
 use Data::Dump qw( dump );
+use Try::Tiny;
 
 __PACKAGE__->mk_accessors(qw( enable_rpc_compat ));
 __PACKAGE__->config( enable_rpc_compat => 0 );
 
-our $VERSION = '0.56';
+our $VERSION = '0.56_01';
 
 #warn "REST VERSION = $VERSION";
 
@@ -313,7 +314,20 @@ sub _rest {
 sub _call_rpc_method_as_action {
     my ( $self, $c, $rpc_method, $oid ) = @_;
 
-    $self->fetch( $c, $oid );
+    my $break_chain = 0;
+    try {
+        $self->fetch( $c, $oid );
+    }
+    catch {
+        $c->log->debug( 'caught exception, res->status==' . $c->res->status )
+            if $c->debug;
+        if ( $c->res->status == 404 ) {
+            $c->log->debug('break chain with 404') if $c->debug;
+            $break_chain = 1;
+        }
+    };
+
+    return if $break_chain;
 
     my $http_method = $self->req_method($c);
 

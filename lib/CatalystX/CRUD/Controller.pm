@@ -13,6 +13,7 @@ use CatalystX::CRUD::Results;
 use MRO::Compat;
 use mro 'c3';
 use Data::Dump qw( dump );
+use Try::Tiny;
 
 __PACKAGE__->mk_accessors(
     qw(
@@ -42,7 +43,7 @@ __PACKAGE__->config(
 # apply Role *after* we declare accessors above
 with 'CatalystX::CRUD::ControllerRole';
 
-our $VERSION = '0.56';
+our $VERSION = '0.56_01';
 
 =head1 NAME
 
@@ -170,10 +171,20 @@ sub fetch : Chained('/') PathPrefix CaptureArgs(1) {
     }
     my @arg = ( defined $pk_is_null || !$id ) ? () : (@pk);
     $c->log->debug( "fetch: " . dump \@arg ) if $c->debug;
-    $c->stash->{object} = $self->do_model( $c, 'fetch', @arg );
-    if ( $self->has_errors($c) or !$c->stash->{object} ) {
-        $self->throw_error( 'No such ' . $self->model_name );
+
+    try {
+        $c->stash->{object} = $self->do_model( $c, 'fetch', @arg );
+        if ( $self->has_errors($c) or !$c->stash->{object} ) {
+            $self->throw_error( 'No such ' . $self->model_name );
+        }
     }
+    catch {
+        $c->res->status(404);
+        $c->res->body( 'No such ' . $self->model_name );
+
+        # re-throw so we interrupt chain.
+        $self->throw_error( 'No such ' . $self->model_name );
+    };
 }
 
 =head2 create
