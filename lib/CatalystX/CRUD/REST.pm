@@ -264,8 +264,12 @@ sub _rest {
     my $rpc = shift @arg;
 
     my $http_method = $self->req_method($c);
-    $c->log->debug("rest OID:$oid  rpc:$rpc  http:$http_method")
-        if $c->debug;
+    $c->log->debug(
+        sprintf(
+            "rest OID:%s  rpc:%s  http:%s",
+            $oid, ( $rpc || '[undef]' ), $http_method
+        )
+    ) if $c->debug;
 
     if ( length $oid and $rpc ) {
         if ( $self->enable_rpc_compat and exists $rpc_methods{$rpc} ) {
