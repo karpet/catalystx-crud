@@ -136,6 +136,7 @@ sub _which_sort {
         return $params->{$p} if defined $params->{$p};
     }
 
+    # use explicit param
     for my $p (qw( cxc-sort _sort )) {
         my $dir = $params->{'cxc-dir'}
             || $params->{'_dir'};
